@@ -1,0 +1,56 @@
+
+FROM amazonlinux:latest
+
+# Arguments & Variables -----------------------------------------------------------------------------------------------
+
+ARG USER=deven
+ARG GROUP=deven
+
+# Install Packages ----------------------------------------------------------------------------------------------------
+
+RUN yum update -y
+RUN yum install -y \
+    ca-certificates \
+    openssh-server \
+    wget \
+    curl \
+    zsh \
+    unzip \
+    vim \
+    git \
+    tar \
+    sudo
+  
+# Install Amazon Extras ------------------------------------------------------------------------------------------------
+ 
+RUN amazon-linux-extras install docker python3.8
+RUN systemctl enable docker
+
+# Create user ----------------------------------------------------------------------------------------------------------
+
+RUN ssh-keygen -A && mkdir -p /run/sshd
+EXPOSE 22
+
+RUN /etc/init.d/sshd start; \
+    sed -i 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config; \
+    sed -i 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config; \
+    sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/' /etc/ssh/sshd_config; \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config; \
+    sed -i 's/#ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/' /etc/ssh/sshd_config; \
+    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+RUN groupadd --gid 1000 $GROUP \
+    && useradd --uid 1000 --gid 1000 --shell /bin/zsh -m $USER -d /home/$USER \
+    && echo $USER ALL=\(root\) NOPASSWD:ALL >> /etc/sudoers \
+    && chmod 0440 /etc/sudoers \
+    && echo "$USER:$(echo $RANDOM | md5sum | head -c 20; echo;)" | chpasswd
+    
+RUN usermod -a -G docker $USER
+
+RUN mkdir /home/$USER/.ssh && chmod 700 /home/$USER/.ssh \
+    && touch /home/$USER/.ssh/authorized_keys && chmod 600 /home/$USER/.ssh/authorized_keys \
+    && chown $USER /home/$USER/.ssh && chown $USER /home/$USER/.ssh/authorized_keys
+
+COPY dotfiles/* /home/$USER
+
+CMD ["/usr/sbin/sshd","-D"]

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-root=$1
-
-docker buildx build --platform linux/amd64,linux/arm64 --push -t ghcr.io/rennochj/deven-base:latest -f $root/Dockerfile $root 
-

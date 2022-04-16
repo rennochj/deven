@@ -1,0 +1,50 @@
+
+FROM alpine:latest
+
+# Arguments & Variables -----------------------------------------------------------------------------------------------
+
+ARG USER=deven
+ARG GROUP=deven
+
+# Install Packages ----------------------------------------------------------------------------------------------------
+
+RUN apk add --update-cache \
+    python3 \
+    docker \
+    ca-certificates \
+    openssh-server \
+    wget \
+    curl \
+    zsh \
+    unzip \
+    vim \
+    tar \
+    bash \
+    sudo    
+
+# Create user ---------------------------------------------------------------------------------------------------------
+
+RUN ssh-keygen -A && mkdir -p /run/sshd
+EXPOSE 22
+
+RUN /etc/init.d/sshd start; \
+    sed -i 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config; \
+    sed -i 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config; \
+    sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/' /etc/ssh/sshd_config; \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config; \
+    sed -i 's/#ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/' /etc/ssh/sshd_config; \
+    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+RUN addgroup -S $GROUP -g 1000 && \    
+    adduser -u 1000 --shell /bin/zsh -S $USER -G $GROUP -G docker && \
+    echo "$USER ALL=(ALL) ALL" > /etc/sudoers.d/$USER && chmod 0440 /etc/sudoers.d/$USER && \ 
+    chmod 0440 /etc/sudoers && \
+    echo "$USER:$(echo $RANDOM | md5sum | head -c 20; echo;)" | chpasswd
+
+RUN mkdir /home/$USER/.ssh && chmod 700 /home/$USER/.ssh \
+    && touch /home/$USER/.ssh/authorized_keys && chmod 600 /home/$USER/.ssh/authorized_keys \
+    && chown $USER /home/$USER/.ssh && chown $USER /home/$USER/.ssh/authorized_keys
+
+COPY dotfiles/* /home/$USER
+
+CMD ["/usr/sbin/sshd","-D"]

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+IMAGE=$1
+
+ssh-keygen -R "[localhost]:2222"
+docker run -it -p 2222:22 --rm --name deven -d $IMAGE
+docker exec -it deven bash -c "echo $(cat ~/.ssh/id_rsa.pub) > /home/deven/.ssh/authorized_keys"

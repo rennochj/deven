@@ -1,0 +1,43 @@
+#!/bin/bash
+
+root=$1
+
+USER=deven
+GROUP=deven
+
+# LABEL org.opencontainers.image.source "https://github.com/rennochj/deven"
+# LABEL org.opencontainers.image.description "Alpine base development environment"
+
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --push \
+    -t ghcr.io/rennochj/deven-alpine-base:latest \
+    -f $root/containers/alpine-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source="https://github.com/rennochj/deven" \
+    --label org.opencontainers.image.description="Alpine base development environment" \
+    $root
+
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --push \
+    -t ghcr.io/rennochj/deven-amazon-base:latest \
+    -f $root/containers/amazon-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source="https://github.com/rennochj/deven" \
+    --label org.opencontainers.image.description="Amazon base development environment" \
+    $root
+
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --push \
+    -t ghcr.io/rennochj/deven-ubuntu-base:latest \
+    -f $root/containers/ubuntu-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source="https://github.com/rennochj/deven" \
+    --label org.opencontainers.image.description="Ubuntu base development environment" \
+    $root
+
