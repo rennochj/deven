@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Initialize ----------------------------------------------------------------------------------------------------------
+
+root=$1     # the path to the root of the containers folder - the build-all script location
+
+USER=deven
+GROUP=deven
+BUILD_PLATFORMS="linux/amd64,linux/arm64"
+GITHUB_REPO="https://github.com/rennochj/deven"
+PACKAGE_REPO="ghcr.io/rennochj"
+
+# Initialize buildx container -----------------------------------------------------------------------------------------
+
+[[ -z $(docker buildx ls | grep 'deven-builder') ]] && docker buildx create --name "deven-builder" --use --bootstrap
+
+# build and push containers -------------------------------------------------------------------------------------------
+
+docker buildx build \
+    --platform $BUILD_PLATFORMS \
+    --push \
+    -t $PACKAGE_REPO/deven-alpine-base:latest \
+    -f $root/dockerfiles/alpine-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source=$GITHUB_REPO \
+    --label org.opencontainers.image.description="Alpine base development environment" \
+    $root
+
+docker buildx build \
+    --platform $BUILD_PLATFORMS \
+    --push \
+    -t $PACKAGE_REPO/deven-amazon-base:latest \
+    -f $root/dockerfiles/amazon-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source=$GITHUB_REPO \
+    --label org.opencontainers.image.description="Amazon base development environment" \
+    $root
+
+docker buildx build \
+    --platform $BUILD_PLATFORMS \
+    --push \
+    -t $PACKAGE_REPO/deven-ubuntu-base:latest \
+    -f $root/dockerfiles/ubuntu-Dockerfile \
+    --build-arg USER=$USER \
+    --build-arg GROUP=$GROUP \
+    --label org.opencontainers.image.source=$GITHUB_REPO \
+    --label org.opencontainers.image.description="Ubuntu base development environment" \
+    $root
+

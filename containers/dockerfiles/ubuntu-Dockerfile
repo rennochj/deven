@@ -1,0 +1,71 @@
+
+FROM ubuntu:focal
+
+# Arguments & Variables -----------------------------------------------------------------------------------------------
+
+ARG USER=deven
+ARG GROUP=deven
+
+# Install Packages ----------------------------------------------------------------------------------------------------
+
+RUN apt update && apt upgrade -y
+RUN DEBIAN_FRONTEND=noninteractive apt -y install \
+    python3.9 \
+    python3-pip \
+    snap \
+    ca-certificates \
+    openssh-server \
+    wget \
+    curl \
+    zsh \
+    unzip \
+    vim \
+    tar \
+    sudo \
+    gnupg \
+    git-all \
+    lsb-release
+
+# Install Docker -----------------------------------------------------------------------------------------------------
+
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+RUN apt update && apt -y install docker-ce docker-ce-cli containerd.io
+
+# Install Kubectl ---------------------------------------------------------------------------------------------------------
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+RUN mv ./kubectl /usr/bin/kubectl
+
+# Create user ---------------------------------------------------------------------------------------------------------
+
+RUN ssh-keygen -A && mkdir -p /run/sshd
+EXPOSE 22
+
+RUN echo "PasswordAuthentication no" > /etc/ssh/sshd_config.d/deven.conf \
+    && echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config.d/deven.conf \
+    && echo "ChallengeResponseAuthentication yes" >> /etc/ssh/sshd_config.d/deven.conf \
+    && echo "PermitRootLogin no" >> /etc/ssh/sshd_config.d/deven.conf \
+    && echo "UsePAM no" >> /etc/ssh/sshd_config.d/deven.conf
+
+RUN groupadd --gid 1000 $GROUP \
+    && useradd --uid 1000 --gid 1000 --shell /bin/zsh -m $USER -d /home/$USER \
+    && echo $USER ALL=\(root\) NOPASSWD:ALL >> /etc/sudoers \
+    && chmod 0440 /etc/sudoers \
+    && echo "$USER:$(echo $RANDOM | md5sum | head -c 20; echo;)" | chpasswd
+    
+RUN usermod -a -G docker $USER
+
+RUN mkdir /home/$USER/.ssh && chmod 700 /home/$USER/.ssh \
+    && touch /home/$USER/.ssh/authorized_keys && chmod 600 /home/$USER/.ssh/authorized_keys \
+    && chown $USER /home/$USER/.ssh && chown $USER /home/$USER/.ssh/authorized_keys
+
+COPY dotfiles/ /home/$USER
+
+RUN mkdir /workspace && chown deven:root /workspace && chmod 770 /workspace
+
+CMD ["/usr/sbin/sshd","-D"]
