@@ -1,5 +1,6 @@
 locals {
   public-key = file(pathexpand(var.public-key-file))
+  docker-host = var.docker-host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker-username}@${var.docker-host}"
 }
 
 terraform {
@@ -13,7 +14,7 @@ terraform {
 
 provider "docker" {
 
-  host     = var.docker-host
+  host     = local.docker-host
   ssh_opts = var.docker-ssh-opts
 
   registry_auth {
@@ -23,16 +24,15 @@ provider "docker" {
 
 }
 
-resource "docker_image" "deven" {
+resource "docker_image" "deven-image" {
   name         = var.deven-image
-  keep_locally = false
-
+  keep_locally = true
 }
 
 resource "docker_container" "deven" {
 
-  image = docker_image.deven.name
-  name  = "deven"
+  image = docker_image.deven-image.name
+  name  = var.deven-instance-name
   ports {
     internal = 22
     external = var.ssh-port
@@ -44,12 +44,6 @@ resource "docker_container" "deven" {
   }
 
   volumes {
-    host_path      = pathexpand("~/.gitconfig")
-    container_path = "/home/deven/.gitconfig"
-    read_only = false
-  }
-
-  volumes {
     volume_name    = docker_volume.deven-workspace.name
     container_path = "/workspace"
     read_only      = false
@@ -57,12 +51,14 @@ resource "docker_container" "deven" {
 
   provisioner "local-exec" {
     command = <<-EOT
-    DOCKER_HOST=${var.docker-host} docker exec deven bash -c "echo '${local.public-key}' > /home/deven/.ssh/authorized_keys"
+    DOCKER_HOST=${local.docker-host} docker exec deven bash -c "echo '${local.public-key}' > /home/deven/.ssh/authorized_keys"
     EOT
   }
 
   provisioner "local-exec" {
-    command = "DOCKER_HOST=${var.docker-host} docker exec deven bash -c 'chown deven -R /workspace && chown deven -R /home/deven  && chown deven /var/run/docker.sock'"
+    command = <<-EOT
+      DOCKER_HOST=${local.docker-host} docker exec deven bash -c 'chown deven -R /workspace && chown deven -R /home/deven  && chown deven /var/run/docker.sock'
+    EOT
   }
 
 }

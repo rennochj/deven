@@ -30,6 +30,6 @@ resource "docker_container" "initialize-workspace" {
   ]
 
   tty = true
-  must_run = false
+  must_run = true
 
 }

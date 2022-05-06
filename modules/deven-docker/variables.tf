@@ -1,6 +1,13 @@
 variable "docker-host" {
   description = "The docker host"
   type        = string
+  default = "localhost"
+}
+
+variable "docker-username" {
+  description = "The username for the docker host "
+  type        = string
+  default     = null
 }
 
 variable "docker-ssh-opts" {
@@ -12,6 +19,12 @@ variable "docker-ssh-opts" {
 variable "deven-image" {
   description = "The development image"
   type        = string
+}
+
+variable "deven-instance-name" {
+  description = "The name of the deven Docker container"
+  type        = string
+  default     = "deven"
 }
 
 variable "docker-config-file" {
@@ -42,6 +55,7 @@ variable "workspace-git-repo" {
   description = "URL for GitHub repo"
   type        = string
 }
+
 variable "workspace-git-repo-location" {
   description = "Location for GitHub repo"
   type        = string

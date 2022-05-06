@@ -18,13 +18,25 @@ variable "workspace-git-repo" {
 variable "docker-host" {
   description = "Docker Host URL"
   type        = string
-  default     = "unix:///var/run/docker.sock"
+  default = "localhost"
 }
 
-variable "docker-image" {
-  description = "Prevent destruction of workspace volume"
+variable "docker-ssh-opts" {
+  description = "The docker SSH options"
+  type        = list(string)
+  default     = []
+}
+
+variable "deven-image" {
+  description = "The URL for the deven Docker image"
   type        = string
-  default     = "ghcr.io/rennochj/deven-ubuntu-base:latest"
+  default     = "ghcr.io/rennochj/deven-amazon-base:latest"
+}
+
+variable "deven-instance-name" {
+  description = "The name of the deven Docker container"
+  type        = string
+  default     = "deven"
 }
 
 variable "docker-config-file" {

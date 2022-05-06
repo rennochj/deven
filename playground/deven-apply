@@ -2,6 +2,44 @@
 
 set -e
 
+SSH_HOME=~/.ssh
+CONTAINER_NAME=deven
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-terraform -chdir="$SCRIPT_DIR/.deven" apply -var "current-user=$USER" -auto-approve $@
+if [ ! -f $SSH_HOME/$CONTAINER_NAME-id_rsa ]; then
+    ssh-keygen -t rsa -b 4096 -f $SSH_HOME/$CONTAINER_NAME-id_rsa -q -N ""
+fi
+
+terraform -chdir="$SCRIPT_DIR/.deven" apply \
+    -var "current-user=$USER" \
+    -var "public-key-file=$SSH_HOME/$CONTAINER_NAME-id_rsa.pub" \
+    -var "deven-instance-name=$CONTAINER_NAME" \
+    -var "workspace-git-repo=https://github.com/rennochj/deven.git"  \
+    -var "deven-image=ghcr.io/rennochj/deven-amazon-base:latest"  \
+    -auto-approve $@ 
+
+SSH_PORT=$(terraform -chdir="$SCRIPT_DIR/.deven" output -raw "ssh-port")
+DOCKER_HOST=$(terraform -chdir="$SCRIPT_DIR/.deven" output -raw "docker-host")
+CONTAINER_NAME=$(terraform -chdir="$SCRIPT_DIR/.deven" output -raw "deven-container-name")
+
+if [ ! -d $SSH_HOME/config.d ]; then
+
+    echo "Creating ~/.ssh/config.d"
+    mkdir -p $SSH_HOME/config.d
+
+    if [ -f $SSH_HOME/config ]; then
+        echo "Moving ~/.ssh/config"
+        mv $SSH_HOME/config $SSH_HOME/config.d/
+    fi
+
+fi
+
+touch $SSH_HOME/config.d/$CONTAINER_NAME.config
+printf "HOST $CONTAINER_NAME\n    HostName $DOCKER_HOST\n    User deven\n    Port $SSH_PORT\n    IdentityFile $SSH_HOME/$CONTAINER_NAME-id_rsa\n\n\n" > ~/.ssh/config.d/$CONTAINER_NAME.config
+
+touch $SSH_HOME/config
+printf "# This file is machine generated from the concatenation of all configuration files from config.d\n" > $SSH_HOME/config
+printf "# cat config.d/* > ./config\n\n" >> $SSH_HOME/config
+cat $SSH_HOME/config.d/* >> $SSH_HOME/config
+
+ ssh-keygen -R "[$DOCKER_HOST]:$SSH_PORT" 

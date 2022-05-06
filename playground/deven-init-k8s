@@ -1,0 +1,7 @@
+#! /bin/bash
+
+set -e
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+terraform -chdir="$SCRIPT_DIR/.deven-k8s" init $@
