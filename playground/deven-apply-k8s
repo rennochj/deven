@@ -18,7 +18,7 @@ terraform -chdir="$SCRIPT_DIR/.deven-k8s" apply \
     -var "deven-instance-name=$DEVEN_NAME" \
     -var "deven-namespace=$DEVEN_NAMESPACE" \
     -var "workspace-git-repo=https://github.com/rennochj/deven.git"  \
-    -var "deven-image=ghcr.io/rennochj/deven-amazon-base:latest"  \
+    -var "deven-image=ghcr.io/rennochj/deven-ubuntu-base:latest"  \
     -var "kubernetes-cluster=$KUBE_CLUSTER" \
     -auto-approve $@ 
 
