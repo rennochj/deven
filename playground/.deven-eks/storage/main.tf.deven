@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-export DEVEN_INSTANCE_NAME="deven-eks"
 
 cat << EOF > $SCRIPT_DIRECTORY/main.tf
 # This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
@@ -16,7 +15,7 @@ module "deven_k8s_ebs" {
   # aws_profile = "default"
   # aws_region = "us-west-2"
   # deven_namespace = "deven-ns"
-  deven_workspace     = "${USER}-${DEVEN_INSTANCE_NAME}-workspace"
+  deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   # deven_workspace_capacity = "11"
   # deven_workspace_storage_class = "gp2"
   # ebs_type = "gp2"

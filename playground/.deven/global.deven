@@ -1,3 +1,0 @@
-#!/bin/bash
-
-export DEVEN_INSTANCE_NAME="deven-docker"

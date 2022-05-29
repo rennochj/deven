@@ -15,7 +15,7 @@ module "deven_ec2_ebs" {
   # aws_credentials = "~/.aws/credentials"
   # aws_profile = "default"
   # aws_region = "us-west-2"
-  deven_workspace = "$USER-$DEVEN_INSTANCE_NAME-workspace"
+  deven_workspace = "$DEVEN_WORKSPACE_NAME"
   # deven_workspace_capacity = "10"
   # ebs_type = "gp2"
 

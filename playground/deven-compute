@@ -12,6 +12,7 @@ DEVEN_SSH_HOME=~/.ssh
 DEVEN_SSH_PORT=2222
 DEVEN_SSH_USER=deven
 DEVEN_INSTANCE_NAME="deven"
+DEVEN_SSH_PRIVATE_KEY="$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa"
 
 # -- Process options --------------------------------------------------------------------------------------------------
 
@@ -53,15 +54,17 @@ fi
 
 # -- Build Templates --------------------------------------------------------------------------------------------------
 
+[[ -f "$DEVEN_DIRECTORY/setup.deven" ]] && source "$DEVEN_DIRECTORY/setup.deven"
+
 for file in "$DEVEN_DIRECTORY/compute/*.deven"; do
     source $file
 done
 
 # -- Create SSH Keys --------------------------------------------------------------------------------------------------
 
-if [ ! -f "$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa" ]; then
-    echo "Creating a new ssh private key - $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa"
-    ssh-keygen -t rsa -b 4096 -f "$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa" -q -N ""
+if [ ! -f "$DEVEN_SSH_PRIVATE_KEY" ]; then
+    echo "Creating a new ssh private key - $DEVEN_SSH_PRIVATE_KEY"
+    ssh-keygen -t rsa -b 4096 -f "$DEVEN_SSH_PRIVATE_KEY" -q -N ""
 fi
 
 # -- Execute ----------------------------------------------------------------------------------------------------------
@@ -70,8 +73,8 @@ if [[ -z $DEVEN_DESTROY ]]
 then
 
   echo "DEVEN Environment Variables ---------------------------------------------"
-  set | grep DEVEN_
-  echo "DEVEN Environment Variables -------------------"
+  set | grep -E DEVEN_.*=
+  echo "DEVEN Environment Variables ---------------------------------------------"
 
   terraform -chdir="$DEVEN_DIRECTORY/compute" init -upgrade
   terraform -chdir="$DEVEN_DIRECTORY/compute" apply -auto-approve $DEVEN_DESTROY

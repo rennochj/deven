@@ -10,7 +10,7 @@ module "deven_docker_volume" {
 
   source = "$DEVEN_MODULE_LOCATION/deven-docker-volume"
 
-  deven_workspace     = "$USER-$DEVEN_INSTANCE_NAME-workspace"
+  deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   #  docker_config_file = "~/.docker/config.json"
   docker_host = "d4r"
   #  docker_ssh_opts = []

@@ -71,12 +71,12 @@ resource "aws_spot_instance_request" "deven_spot" {
   wait_for_fulfillment = true
   key_name             = aws_key_pair.deven_key.key_name
 
-  subnet_id = var.aws_subnet
-  vpc_security_group_ids = [aws_security_group.deven_sg.id]
-
   tags = {
     Name = var.deven_instance_name
   }
+
+  subnet_id = var.aws_subnet
+  vpc_security_group_ids = [aws_security_group.deven_sg.id]
 
   user_data = <<EOF
     #!/bin/bash
@@ -97,21 +97,21 @@ resource "aws_volume_attachment" "mountvolumetoec2" {
   stop_instance_before_detaching = true
 }
 
-resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
-  alarm_name          = "deven_cpu_alarm"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = var.deven_idle_eval_periods
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = var.deven_idle_period
-  statistic           = "Average"
-  threshold           = var.deven_idle_cpu_threshhold
-  alarm_description   = "This metric monitors ec2 cpu utilization"
-  dimensions = {
-    InstanceId = aws_spot_instance_request.deven_spot.id
-  }
-  alarm_actions = [
-    "arn:aws:automate:us-west-2:ec2:terminate"
-  ]
+# resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
+#   alarm_name          = "deven_cpu_alarm"
+#   comparison_operator = "LessThanOrEqualToThreshold"
+#   evaluation_periods  = var.deven_idle_eval_periods
+#   metric_name         = "CPUUtilization"
+#   namespace           = "AWS/EC2"
+#   period              = var.deven_idle_period
+#   statistic           = "Average"
+#   threshold           = var.deven_idle_cpu_threshhold
+#   alarm_description   = "This metric monitors ec2 cpu utilization"
+#   dimensions = {
+#     InstanceId = aws_spot_instance_request.deven_spot.spot_instance_id
+#   }
+#   alarm_actions = [
+#     "arn:aws:automate:${var.aws_region}:ec2:terminate"
+#   ]
 
-}
+# }

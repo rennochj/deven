@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-export DEVEN_INSTANCE_NAME="deven-k8s"
 
 [[ -z $GHCR_USER ]] && echo "GHCR_USER is not defined and is required" && exit 2
 [[ -z $GHCR_PAT ]] && echo "GHCR_PAT is not defined and is required" && exit 2
@@ -17,10 +16,10 @@ module "deven_k8s" {
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
   #  deven_namespace = "deven-ns"
   deven_ssh_port = $DEVEN_SSH_PORT
-  deven_workspace     = "${USER}-${DEVEN_INSTANCE_NAME}-workspace"
+  deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   #  deven_workspace_capacity = "10Gi"
   #  kubernetes_config = "~/.kube/config"
-  public_key_file = "~/.ssh/$DEVEN_INSTANCE_NAME-id_rsa.pub"
+  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
   registry_password = "$GHCR_PAT"
   registry_username = "$GHCR_USER"
 

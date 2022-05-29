@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-export DEVEN_INSTANCE_NAME="deven-k8s-remote"
 
 cat << EOF > $SCRIPT_DIRECTORY/main.tf
 # This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
@@ -11,7 +10,7 @@ module "deven_k8s_hostpath" {
   source = "$DEVEN_MODULE_LOCATION/deven-k8s-hostpath"
 
   #  deven_namespace = "deven-ns"
-  deven_workspace     = "${USER}-${DEVEN_INSTANCE_NAME}-workspace"
+  deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   #  deven_workspace_capacity = "10Gi"
   deven_workspace_hostpath = "/home/rennochj"
   deven_workspace_storage_class = "microk8s-hostpath"

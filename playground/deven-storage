@@ -42,6 +42,12 @@ fi
 
 # -- Build Templates --------------------------------------------------------------------------------------------------
 
+[[ -f "$DEVEN_DIRECTORY/setup.deven" ]] && source "$DEVEN_DIRECTORY/setup.deven"
+
+echo "DEVEN Environment Variables ---------------------------------------------"
+set | grep -E DEVEN_.*=
+echo "DEVEN Environment Variables ---------------------------------------------"
+
 for file in "$DEVEN_DIRECTORY/storage/*.deven"; do
     source $file
 done

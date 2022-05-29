@@ -111,7 +111,7 @@ resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
     InstanceId = aws_instance.deven.id
   }
   alarm_actions = [
-    "arn:aws:automate:us-west-2:ec2:terminate"
+    "arn:aws:automate:${var.aws_region}:ec2:terminate"
   ]
 
 }

@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-export DEVEN_INSTANCE_NAME="deven_docker_d4r"
 
 cat << EOF > $SCRIPT_DIRECTORY/main.tf
 # This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
@@ -13,12 +12,12 @@ module "deven_docker" {
   #  deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
   deven_ssh_port = $DEVEN_SSH_PORT
-  deven_workspace     = "$USER-$DEVEN_INSTANCE_NAME-workspace"
+  deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   #  docker_config_file = "~/.docker/config.json"
   docker_host = "d4r"
   #  docker_ssh_opts = []
   docker_username = "$USER"
-  public_key_file     = "~/.ssh/$DEVEN_INSTANCE_NAME-id_rsa.pub"
+  public_key_file     = "$DEVEN_SSH_PRIVATE_KEY.pub"
   #  workspace_git_repo = ""
 
 }

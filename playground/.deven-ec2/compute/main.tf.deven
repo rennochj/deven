@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
-export DEVEN_INSTANCE_NAME="deven-ec2"
 export DEVEN_SSH_USER=ec2-user
 export DEVEN_SSH_PORT=22
 
@@ -23,11 +22,11 @@ module "deven_ec2" {
   # deven_idle_cpu_threshhold = 2
   # deven_idle_eval_periods = 2
   # deven_idle_period = 60
-  # deven_instance_name = "deven"
+  deven_instance_name = "$DEVEN_INSTANCE_NAME"
   # deven_instance_type = "t2.micro"
   # deven_instance_user_data = ""
-  deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$USER-$DEVEN_INSTANCE_NAME-workspace" --output=json --region us-west-2 | jq -r '.Volumes[0].VolumeId')"
-  public_key_file = "$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa.pub"
+  deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$DEVEN_WORKSPACE_NAME" --output=json --region us-west-2 | jq -r '.Volumes[0].VolumeId')"
+  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
 
 }
 
@@ -36,7 +35,7 @@ output "host" {
 }
 
 output "ssh_port" {
-  value = 22
+  value = $DEVEN_SSH_PORT
 }
 
 EOF
