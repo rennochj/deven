@@ -1,12 +1,8 @@
 
-output "container" {
-  value = docker_container.deven
+output "host" {
+  value = var.docker_host
 }
 
-output "docker-host" {
-  value = var.docker-host
-}
-
-output "ssh-port" {
-  value = var.ssh-port
+output "ssh_port" {
+  value = var.deven_ssh_port
 }

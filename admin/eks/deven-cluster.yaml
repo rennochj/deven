@@ -1,0 +1,26 @@
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: deven-cluster
+  region: us-west-2
+
+# availabilityZones: ["us-west-2a", "us-west-2b"]
+
+managedNodeGroups:
+  - name: deven-ng
+    instanceType: t3.large
+    desiredCapacity: 1
+    availabilityZones: ["us-west-2a"]
+    spot: true
+
+cloudWatch:
+    clusterLogging:
+        # enable specific types of cluster control plane logs
+        enableTypes: ["all"]
+        # all supported types: "api", "audit", "authenticator", "controllerManager", "scheduler"
+        # supported special values: "*" and "all"
+
+secretsEncryption:
+  keyARN: arn:aws:kms:us-west-2:882103041271:key/338388cc-2ec2-4cdc-acda-5dc539649d2e

@@ -1,7 +1,0 @@
-#! /bin/bash
-
-SSH_HOME=~/.ssh
-CONTAINER_NAME=deven
-
-ssh-keygen -t rsa -b 4096 -f $SSH_HOME/$CONTAINER_NAME-id_rsa -q -N ""
-

@@ -1,8 +1,0 @@
-#! /bin/bash
-
-set -e
-
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-KUBE_CLUSTER=$(basename $(kubectl config view -o jsonpath='{.clusters[].cluster.server}') | cut -d':' -f1)
-
-terraform -chdir="$SCRIPT_DIR/.deven-k8s" destroy -var "current-user=$USER" -var "kubernetes-cluster=$KUBE_CLUSTER" -auto-approve $@

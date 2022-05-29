@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -x
+
+export DEVEN_SSH_HOME=~/.ssh
+export DEVEN_SSH_PORT=2222
+export DEVEN_INSTANCE_NAME="deven"
+
+export TF_VAR_docker_host="d4r"
+export TF_VAR_docker_username="$USER"
+export TF_VAR_current_user="$USER"
+export TF_VAR_public_key_file="$DEVEN_PUBLIC_KEY_FILE" 
+export TF_VAR_deven_instance_name="$DEVEN_INSTANCE_NAME" 
+export TF_VAR_workspace_git_repo="https://github.com/rennochj/deven.git"
+export TF_VAR_deven_image="ghcr.io/rennochj/deven-amazon-base:latest" 
+export TF_VAR_public_key_file="$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa.pub"
+export TF_VAR_ssh_port=$DEVEN_SSH_PORT

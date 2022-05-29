@@ -1,0 +1,27 @@
+#!/bin/bash
+
+SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+export DEVEN_INSTANCE_NAME="deven_docker_d4r"
+
+cat << EOF > $SCRIPT_DIRECTORY/main.tf
+# This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
+
+module "deven_docker_volume" {
+
+  source = "$DEVEN_MODULE_LOCATION/deven-docker-volume"
+
+  deven_workspace     = "$USER-$DEVEN_INSTANCE_NAME-workspace"
+  #  docker_config_file = "~/.docker/config.json"
+  docker_host = "d4r"
+  #  docker_ssh_opts = []
+  docker_username = "$USER"
+  #  initialization_container = "ghcr.io/rennochj/deven-alpine-base:latest"
+  workspace_git_repo = "https://github.com/rennochj/deven.git"
+
+}
+
+output "id" {
+  value = module.deven_docker_volume.id
+}
+
+EOF

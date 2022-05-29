@@ -1,0 +1,22 @@
+#!/bin/bash
+
+SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+export DEVEN_INSTANCE_NAME="deven-k8s"
+
+cat << EOF > $SCRIPT_DIRECTORY/main.tf
+# This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
+
+module "deven_k8s_hostpath" {
+
+  source = "$DEVEN_MODULE_LOCATION/deven-k8s-hostpath"
+
+  #  deven_namespace = "deven-ns"
+  deven_workspace     = "${USER}-${DEVEN_INSTANCE_NAME}-workspace"
+  #  deven_workspace_capacity = "10Gi"
+  deven_workspace_hostpath = "/Users/rennochj/code/deven/workspace"
+  #  deven_workspace_storage_class = "hostpath"
+  #  kubernetes_config = "~/.kube/config"
+
+}
+
+EOF

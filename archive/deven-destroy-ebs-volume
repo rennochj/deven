@@ -1,0 +1,10 @@
+#! /bin/bash
+
+set -e
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+KUBECONFIG=~/.kube/deven-eks.config
+
+terraform -chdir="$SCRIPT_DIR/.deven-ebs-volume" destroy \
+    -auto-approve $@

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# USER_ARN=`aws iam get-user | jq -r .User.Arn`
+
+# eksctl delete iamidentitymapping \
+#     --cluster deven-cluster \
+#     --arn "$USER_ARN" \
+#     --region us-west-2 \
+#     --all
+
+eksctl delete cluster -f deven-cluster.yaml
+

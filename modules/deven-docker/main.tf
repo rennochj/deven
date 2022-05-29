@@ -1,6 +1,6 @@
 locals {
-  public-key = file(pathexpand(var.public-key-file))
-  docker-host = var.docker-host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker-username}@${var.docker-host}"
+  public_key                 = file(pathexpand(var.public_key_file))
+  docker_host = var.docker_host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker_username}@${var.docker_host}"
 }
 
 terraform {
@@ -14,28 +14,28 @@ terraform {
 
 provider "docker" {
 
-  host     = local.docker-host
-  ssh_opts = var.docker-ssh-opts
+  host     = local.docker_host
+  ssh_opts = var.docker_ssh_opts
 
   registry_auth {
     address     = "ghcr.io"
-    config_file = pathexpand(var.docker-config-file)
+    config_file = pathexpand(var.docker_config_file)
   }
 
 }
 
-resource "docker_image" "deven-image" {
-  name         = var.deven-image
+resource "docker_image" "deven_image" {
+  name         = var.deven_image
   keep_locally = true
 }
 
 resource "docker_container" "deven" {
 
-  image = docker_image.deven-image.name
-  name  = var.deven-instance-name
+  image = docker_image.deven_image.name
+  name  = var.deven_instance_name
   ports {
     internal = 22
-    external = var.ssh-port
+    external = var.deven_ssh_port
   }
 
   volumes {
@@ -44,20 +44,20 @@ resource "docker_container" "deven" {
   }
 
   volumes {
-    volume_name    = docker_volume.deven-workspace.name
+    volume_name    = var.deven_workspace
     container_path = "/workspace"
     read_only      = false
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-    DOCKER_HOST=${local.docker-host} docker exec deven bash -c "echo '${local.public-key}' > /home/deven/.ssh/authorized_keys"
+    DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c "echo '${local.public_key}' > /home/deven/.ssh/authorized_keys"
     EOT
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-      DOCKER_HOST=${local.docker-host} docker exec deven bash -c 'chown deven -R /workspace && chown deven -R /home/deven  && chown deven /var/run/docker.sock'
+      DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c 'chown deven -R /workspace && chown deven -R /home/deven  && chown deven /var/run/docker.sock'
     EOT
   }
 

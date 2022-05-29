@@ -1,0 +1,20 @@
+#!/bin/bash
+
+eksctl create cluster \
+    --kubeconfig ~/.kube/deven-eks.config \
+    -f deven-cluster.yaml
+
+# USER_ARN=`aws iam get-user | jq -r .User.Arn`
+
+# eksctl delete iamidentitymapping \
+#     --cluster deven-cluster \
+#     --arn "$USER_ARN" \
+#     --region us-west-2 \
+#     --all
+
+# eksctl create iamidentitymapping \
+#     --cluster deven-cluster \
+#     --arn "$USER_ARN" \
+#     --group system:masters \
+#     --username admin \
+#     --region us-west-2

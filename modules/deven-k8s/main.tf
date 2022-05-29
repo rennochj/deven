@@ -1,6 +1,6 @@
 locals {
-  public-key = file(pathexpand(var.public-key-file))
-  kubernetes-config-expanded = pathexpand(var.kubernetes-config)
+  public_key                 = file(pathexpand(var.public_key_file))
+  kubernetes_config_expanded = pathexpand(var.kubernetes_config)
 }
 
 terraform {
@@ -13,19 +13,13 @@ terraform {
 }
 
 provider "kubernetes" {
-  config_path = local.kubernetes-config-expanded
-}
-
-resource "kubernetes_namespace" "deven" {
-  metadata {
-    name = var.deven-namespace
-  }
+  config_path = local.kubernetes_config_expanded
 }
 
 resource "kubernetes_secret" "deven_secret" {
   metadata {
     name      = "package-ghcr-io"
-    namespace = kubernetes_namespace.deven.metadata.0.name
+    namespace = "${var.deven_namespace}"
   }
 
   type = "kubernetes.io/dockerconfigjson"
@@ -35,7 +29,7 @@ resource "kubernetes_secret" "deven_secret" {
       {
         auths = {
           "ghcr.io" = {
-            "auth" = base64encode("${var.registry-username}:${var.registry-password}")
+            "auth" = base64encode("${var.registry_username}:${var.registry_password}")
           }
         }
       }
@@ -43,11 +37,29 @@ resource "kubernetes_secret" "deven_secret" {
   }
 }
 
+resource "kubernetes_persistent_volume_claim" "deven_workspace_pvc" {
+
+  metadata {
+    name = "${var.deven_workspace}"
+    namespace = "${var.deven_namespace}"
+  }
+  spec {
+    access_modes = ["ReadWriteMany"]
+    resources {
+      requests = {
+        storage = "${var.deven_workspace_capacity}"
+      }
+    }
+    volume_name = "${var.deven_workspace}"
+  }
+
+}
+
 resource "kubernetes_pod" "deven" {
 
   metadata {
-    name      = var.deven-instance-name
-    namespace = kubernetes_namespace.deven.metadata.0.name
+    name      = var.deven_instance_name
+    namespace = "${var.deven_namespace}"
     labels = {
       app = "deven-app"
     }
@@ -60,10 +72,10 @@ resource "kubernetes_pod" "deven" {
     }
 
     container {
-      image = var.deven-image
+      image = var.deven_image
       name  = "deven-container"
       volume_mount {
-        name       = var.deven-workspace
+        name       = var.deven_workspace
         mount_path = "/workspace"
       }
       port {
@@ -71,23 +83,11 @@ resource "kubernetes_pod" "deven" {
       }
     }
 
-    init_container {
-      name  = "init-deven-workspace"
-      image = "alpine/git"
-      volume_mount {
-        name       = var.deven-workspace
-        mount_path = "/workspace"
-      }
-      command = [
-        "ash", 
-        "-c", 
-        "cd /workspace && git clone '${var.workspace-git-repo}'"
-        ]
-    }
-
     volume {
-      name = var.deven-workspace
-      empty_dir {}
+      name = var.deven_workspace
+      persistent_volume_claim {
+        claim_name = "${kubernetes_persistent_volume_claim.deven_workspace_pvc.metadata.0.name}"
+      }
     }
 
     security_context {
@@ -97,34 +97,29 @@ resource "kubernetes_pod" "deven" {
 
   provisioner "local-exec" {
     command = <<-EOT
-    KUBECONFIG="${local.kubernetes-config-expanded}" kubectl exec --namespace=${var.deven-namespace} ${var.deven-instance-name} -- bash -c "echo '${local.public-key}' > /home/deven/.ssh/authorized_keys"
+    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "echo '${local.public_key}' > /home/deven/.ssh/authorized_keys"
     EOT
   }
 
   provisioner "local-exec" {
     command = <<-EOT
-    KUBECONFIG="${local.kubernetes-config-expanded}" kubectl exec --namespace=${var.deven-namespace} ${var.deven-instance-name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
+    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
     EOT
   }
 
-}
+  provisioner "local-exec" {
+    command = <<-EOT
+    KUBECONFIG=${var.kubernetes_config} nohup kubectl port-forward --namespace ${var.deven_namespace} ${var.deven_instance_name} ${var.deven_ssh_port}:22 > /dev/null 2>&1 &
+    disown
+    EOT
+  }
 
-resource "kubernetes_service" "deven" {
-  metadata {
-    name      = "deven-service"
-    namespace = kubernetes_namespace.deven.metadata.0.name
+  provisioner "local-exec" {
+    when = destroy
+    command = <<-EOT
+    pkill -f "kubectl port-forward"
+    EOT
   }
-  spec {
-    selector = {
-      app = kubernetes_pod.deven.metadata.0.labels.app
-    }
-    type = "NodePort"
-    port {
-      name = "p1"
-      node_port   = var.ssh-port
-      port        = 22
-      target_port = 22
-    }
-  }
+
 }
 

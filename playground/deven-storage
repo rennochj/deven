@@ -1,0 +1,52 @@
+#! /bin/bash
+
+# -- Initialize -------------------------------------------------------------------------------------------------------
+
+set -e
+
+DEVEN_DIRECTORY="./.deven"
+DEVEN_DESTROY=""
+DEVEN_MODULE_LOCATION="/Users/rennochj/code/deven/modules"
+
+# -- Process options --------------------------------------------------------------------------------------------------
+
+usage() {
+  echo "\
+deven-storage [-h]                # help
+              [-d]                # destroy
+              [deven-directory]   # director of the deven configuration directory (default - $DEVEN_DIRECTORY)
+
+All options must preceed the deven-directory argument.
+"
+}
+
+while getopts "hd" option
+do
+
+  case $option in
+
+    h) usage ; exit ;;
+    d) DEVEN_DESTROY="-destroy" ;;
+    ?) usage ; exit ;;
+
+  esac
+
+done
+
+shift $(expr $OPTIND - 1)
+
+if [[ ! -z $@ ]]
+then
+  DEVEN_DIRECTORY=$1
+fi
+
+# -- Build Templates --------------------------------------------------------------------------------------------------
+
+for file in "$DEVEN_DIRECTORY/storage/*.deven"; do
+    source $file
+done
+
+# -- Execute ----------------------------------------------------------------------------------------------------------
+
+terraform -chdir="$DEVEN_DIRECTORY/storage" init -upgrade
+terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY

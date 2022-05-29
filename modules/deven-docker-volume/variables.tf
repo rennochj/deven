@@ -16,28 +16,10 @@ variable "docker_ssh_opts" {
   default     = []
 }
 
-variable "deven_image" {
-  description = "The development image"
-  type        = string
-  default     = "ghcr.io/rennochj/deven-amazon-base:latest"
-}
-
-variable "deven_instance_name" {
-  description = "The name of the deven Docker container"
-  type        = string
-  default     = "deven"
-}
-
 variable "docker_config_file" {
   description = "Location of the Docker configuration file"
   type        = string
   default     = "~/.docker/config.json"
-}
-
-variable "public_key_file" {
-  description = "Provided public key for ssh login (authorized_keys)"
-  type        = string
-  default     = "~/.ssh/id_rsa.pub"
 }
 
 variable "deven_workspace" {
@@ -46,15 +28,14 @@ variable "deven_workspace" {
   default     = "deven_workspace"
 }
 
-variable "deven_ssh_port" {
-  description = "Exposed port for ssh"
-  type        = number
-  default     = 2222
-}
-
 variable "workspace_git_repo" {
   description = "URL for GitHub repo"
   type        = string
   default     = ""
 }
 
+variable "initialization_container" {
+  description = "Container for initializing the workspace."
+  type        = string
+  default     = "ghcr.io/rennochj/deven-alpine-base:latest"
+}

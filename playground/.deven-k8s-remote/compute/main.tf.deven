@@ -1,0 +1,42 @@
+#!/bin/bash
+
+SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+export DEVEN_INSTANCE_NAME="deven-k8s-remote"
+
+[[ -z $GHCR_USER ]] && echo "GHCR_USER is not defined and is required" && exit 2
+[[ -z $GHCR_PAT ]] && echo "GHCR_PAT is not defined and is required" && exit 2
+
+cat << EOF > $SCRIPT_DIRECTORY/main.tf
+# This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
+
+module "deven_k8s" {
+
+  source = "$DEVEN_MODULE_LOCATION/deven-k8s"
+
+  #  deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
+  deven_instance_name = "$DEVEN_INSTANCE_NAME"
+  #  deven_namespace = "deven-ns"
+  deven_ssh_port = $DEVEN_SSH_PORT
+  deven_workspace     = "${USER}-${DEVEN_INSTANCE_NAME}-workspace"
+  #  deven_workspace_capacity = "10Gi"
+  kubernetes_config = "~/.kube/k8s.config"
+  public_key_file = "~/.ssh/$DEVEN_INSTANCE_NAME-id_rsa.pub"
+  registry_password = "$GHCR_PAT"
+  registry_username = "$GHCR_USER"
+
+}
+
+output "ssh_port" {
+  value = $DEVEN_SSH_PORT
+}
+
+output "deven_instance_name" {
+  value = "$DEVEN_INSTANCE_NAME"
+}
+
+output "host" {
+  value = module.deven_k8s.host
+}
+
+EOF
+

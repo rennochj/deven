@@ -1,0 +1,11 @@
+#! /bin/bash
+
+set -e
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+terraform -chdir="$SCRIPT_DIR/.deven-ec2" init $@
+
+# terraform -chdir="$SCRIPT_DIR/.deven-ec2" import aws_default_vpc.deven_vpc vpc-0c45ed9142d6190db
+# terraform -chdir="$SCRIPT_DIR/.deven-ec2" import aws_default_subnet.deven_subnet subnet-0061fca622534b107
+

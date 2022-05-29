@@ -1,0 +1,52 @@
+#! /bin/bash
+
+# -- Initialize -------------------------------------------------------------------------------------------------------
+
+set -e
+
+DEVEN_DIRECTORY="./.deven"
+DEVEN_DESTROY=""
+
+# -- Process options --------------------------------------------------------------------------------------------------
+
+usage() {
+  echo "\
+deven-storage [-h]                # help
+              [-d]                # destroy
+              [deven-directory]   # director of the deven configuration directory (default - $DEVEN_DIRECTORY)
+
+All options must preceed the deven-directory argument.
+"
+}
+
+while getopts "hd" option
+do
+
+  case $option in
+
+    h) usage ; exit ;;
+    d) DEVEN_DESTROY="-destroy" ;;
+    ?) usage ; exit ;;
+
+  esac
+
+done
+
+shift $(expr $OPTIND - 1)
+
+if [[ ! -z $@ ]]
+then
+  DEVEN_DIRECTORY=$1
+fi
+
+# -- Execute ----------------------------------------------------------------------------------------------------------
+
+if [[ -f "$DEVEN_DIRECTORY/deven-config" ]]
+then
+    source "$DEVEN_DIRECTORY/deven-config"
+fi
+
+printenv
+
+terraform -chdir="$DEVEN_DIRECTORY/storage" init -upgrade
+terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY
