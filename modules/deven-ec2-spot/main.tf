@@ -97,21 +97,21 @@ resource "aws_volume_attachment" "mountvolumetoec2" {
   stop_instance_before_detaching = true
 }
 
-# resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
-#   alarm_name          = "deven_cpu_alarm"
-#   comparison_operator = "LessThanOrEqualToThreshold"
-#   evaluation_periods  = var.deven_idle_eval_periods
-#   metric_name         = "CPUUtilization"
-#   namespace           = "AWS/EC2"
-#   period              = var.deven_idle_period
-#   statistic           = "Average"
-#   threshold           = var.deven_idle_cpu_threshhold
-#   alarm_description   = "This metric monitors ec2 cpu utilization"
-#   dimensions = {
-#     InstanceId = aws_spot_instance_request.deven_spot.spot_instance_id
-#   }
-#   alarm_actions = [
-#     "arn:aws:automate:${var.aws_region}:ec2:terminate"
-#   ]
+resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
+  alarm_name          = "deven_cpu_alarm"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = var.deven_idle_eval_periods
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = var.deven_idle_period
+  statistic           = "Average"
+  threshold           = var.deven_idle_cpu_threshhold
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+  dimensions = {
+    InstanceId = aws_spot_instance_request.deven_spot.spot_instance_id
+  }
+  alarm_actions = [
+    "arn:aws:automate:${var.aws_region}:ec2:terminate"
+  ]
 
-# }
+}

@@ -76,13 +76,13 @@ variable "deven_instance_user_data" {
 variable "deven_idle_eval_periods" {
   description = "Number of idle evaluation periods "
   type        = number
-  default     = 2
+  default     = 3
 }
 
 variable "deven_idle_period" {
   description = "The idle time period (seconds)"
   type        = number
-  default     = 60
+  default     = 600
 }
 
 variable "deven_idle_cpu_threshhold" {

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+export DEVEN_SSH_PORT=22
+
+cat << EOF > $SCRIPT_DIRECTORY/main.tf
+# This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
+
+module "deven_efs" {
+
+  source = "$DEVEN_MODULE_LOCATION/deven-efs"
+
+  # aws_credentials = "~/.aws/credentials"
+  # aws_profile = "default"
+  # aws_region = "us-west-2"
+  # deven_availability_zone = "us-west-2a"
+  deven_workspace = "$DEVEN_WORKSPACE_NAME"
+
+}
+
+output "efs_workspace_id" {
+  value = module.deven_efs.deven_efs_id
+}
+
+EOF
+

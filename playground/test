@@ -1,0 +1,7 @@
+#!/bin/bash
+
+DEVEN_1=1
+DEVEN_2=2
+TEST="This is a test of DEVEN_"
+
+set | grep -E DEVEN_.*=

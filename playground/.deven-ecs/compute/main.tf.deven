@@ -1,0 +1,41 @@
+#!/bin/bash
+
+SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+export DEVEN_SSH_PORT=22
+
+[[ -z $GHCR_USER ]] && echo "GHCR_USER is not defined and is required" && exit 2
+[[ -z $GHCR_PAT ]] && echo "GHCR_PAT is not defined and is required" && exit 2
+
+cat << EOF > $SCRIPT_DIRECTORY/main.tf
+# This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
+
+module "deven_ecs" {
+
+  source = "$DEVEN_MODULE_LOCATION/deven-ecs"
+
+  # aws_config = "~/.aws/config"
+  # aws_credentials = "~/.aws/credentials"
+  # aws_profile = "default"
+  # aws_region = "us-west-2"
+  deven_ecs_cluster = "deven-cluster"
+  deven_efs_id = "$(terraform -chdir=$SCRIPT_DIRECTORY/../storage show -json | jq -r '.values.outputs.efs_workspace_id.value')"
+  # deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
+  deven_instance_name = "$DEVEN_INSTANCE_NAME"
+  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
+  deven_subnet = "subnet-0d0351247de135416"
+  deven_vpc = "vpc-09fb1850758172ba1"
+  registry_password = "$GHCR_PAT"
+  registry_username = "$GHCR_USER"
+
+}
+
+output "host" {
+  value = module.deven_ecs.deven_instance
+}
+
+output "ssh_port" {
+  value = $DEVEN_SSH_PORT
+}
+
+EOF
+

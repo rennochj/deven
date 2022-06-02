@@ -20,8 +20,8 @@ module "deven_ec2_spot" {
   # deven_ami_names = ["Amazon Linux 2"]
   # deven_ami_owners = ["823765613917"]
   # deven_idle_cpu_threshhold = 2
-  # deven_idle_eval_periods = 2
-  # deven_idle_period = 60
+  # deven_idle_eval_periods = 3
+  # deven_idle_period = 600
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
   deven_instance_type = "t3.large"
   # deven_instance_user_data = ""
