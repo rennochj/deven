@@ -13,7 +13,7 @@ fi
 
 terraform -chdir="$SCRIPT_DIR/.deven-k8s" apply \
     -var "registry-username=rennochj" \
-    -var "registry-password=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" \
+    -var "registry-password=" \
     -var "current-user=$USER" \
     -var "public-key-file=$SSH_HOME/$DEVEN_NAME-id_rsa.pub" \
     -var "kubernetes-config=~/.kube/rennoc.config" \
