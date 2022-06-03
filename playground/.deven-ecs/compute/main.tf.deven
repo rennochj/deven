@@ -13,6 +13,7 @@ module "deven_ecs" {
 
   source = "$DEVEN_MODULE_LOCATION/deven-ecs"
 
+  assign_public_ip = true
   # aws_config = "~/.aws/config"
   # aws_credentials = "~/.aws/credentials"
   # aws_profile = "default"
@@ -24,17 +25,26 @@ module "deven_ecs" {
   public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
   deven_subnet = "subnet-0d0351247de135416"
   deven_vpc = "vpc-09fb1850758172ba1"
-  registry_password = "$GHCR_PAT"
   registry_username = "$GHCR_USER"
+  registry_password = "$GHCR_PAT"
 
 }
 
 output "host" {
   value = module.deven_ecs.deven_instance
+
+  depends_on = [
+    module.deven_ecs
+  ]
+
 }
 
 output "ssh_port" {
   value = $DEVEN_SSH_PORT
+}
+
+output "deven_security_group" {
+  value = module.deven_ecs.deven_security_group
 }
 
 EOF

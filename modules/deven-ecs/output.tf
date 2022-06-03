@@ -1,7 +1,6 @@
-output "deven_instance" {
-  value = aws_lb.deven_nlb.dns_name
+
+output "deven_security_group" {
+  value = aws_security_group.deven_ecs_sg.id
 }
 
-output "deven_service" {
-  value = aws_ecs_service.deven_service
-}
+

@@ -50,14 +50,6 @@ resource "aws_security_group" "deven_ecs_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # To Allow EFS Access
-  ingress {
-    from_port   = 2049
-    protocol    = "tcp"
-    to_port     = 2049
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -117,12 +109,6 @@ resource "aws_iam_role_policy_attachment" "deven_repository_permissions" {
   policy_arn = aws_iam_policy.ghcr_repository_policy.arn
 }
 
-resource "aws_efs_mount_target" "deven_mount" {
-  file_system_id = "${var.deven_efs_id}"
-  subnet_id      = "${var.deven_subnet}"
-  security_groups = [aws_security_group.deven_ecs_sg.id]
-}
-
 resource "aws_ecs_task_definition" "deven_task" {
   family                   = "${var.deven_instance_name}-task-${random_string.random_suffix.result}"
   network_mode             = "awsvpc"
@@ -153,7 +139,7 @@ resource "aws_ecs_task_definition" "deven_task" {
           "value": "${local.public_key}"
         }
       ]
-      command = ["/bin/bash", "-c", "echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys && chown deven -R /home/deven && /usr/sbin/sshd -D && chown -R /workspace"]
+      command = ["/bin/bash", "-c", "echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys && chown deven -R /home/deven /workspace && /usr/sbin/sshd -D"]
       essential = true
       mountPoints = [
         {
@@ -172,34 +158,6 @@ resource "aws_ecs_task_definition" "deven_task" {
   ])
 }
 
- resource "aws_lb" "deven_nlb" {
-  name               = "${var.deven_instance_name}-nlb"
-  internal           = false
-  load_balancer_type = "network"
-
-  enable_deletion_protection = false
-  subnets         = ["${var.deven_subnet}"]
-}
-
-resource "aws_lb_target_group" "deven_load_balancer" {
-  name        = "${var.deven_instance_name}-tg"
-  port        = 22
-  protocol    = "TCP_UDP"
-  target_type = "ip"
-  vpc_id      = "${var.deven_vpc}"
-}
-
-resource "aws_lb_listener" "deven_lb_listener" {
-  load_balancer_arn = aws_lb.deven_nlb.arn
-  port              = 22
-  protocol          = "TCP_UDP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.deven_load_balancer.arn
-  }
-}
-
 resource "aws_ecs_service" "deven_service" {
   name            = "deven-service-${random_string.random_suffix.result}"
   cluster         = "${var.deven_ecs_cluster}"
@@ -207,18 +165,50 @@ resource "aws_ecs_service" "deven_service" {
   desired_count   = 1
   launch_type     = "FARGATE"
   scheduling_strategy  = "REPLICA"
+  wait_for_steady_state = true
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.deven_load_balancer.arn
-    container_name   = "${var.deven_instance_name}"
-    container_port   = 22
-  }
+  # load_balancer {
+  #   target_group_arn = aws_lb_target_group.deven_load_balancer.arn
+  #   container_name   = "${var.deven_instance_name}"
+  #   container_port   = 22
+  # }
 
   network_configuration {
     subnets         = ["${var.deven_subnet}"]
-    assign_public_ip = true
-    security_groups = [aws_security_group.deven_ecs_sg.id]
+    assign_public_ip = var.assign_public_ip
+    security_groups = [
+      aws_security_group.deven_ecs_sg.id
+    ]
   }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      aws ec2 describe-network-interfaces --filters Name=group-id,Values=${aws_security_group.deven_ecs_sg.id} --query 'NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicIp' --region us-west-2 --output text > ${aws_ecs_service.deven_service.name}-public-ip.deven-info
+      aws ec2 describe-network-interfaces --filters Name=group-id,Values=${aws_security_group.deven_ecs_sg.id} --query 'NetworkInterfaces[0].PrivateIpAddresses[0].PrivateIpAddress' --region us-west-2 --output text > ${aws_ecs_service.deven_service.name}-private-ip.deven-info
+    EOF
+  }
+
+  provisioner "local-exec" {
+    when = destroy
+    command = <<EOF
+      rm *-public-ip.deven-info *-private-ip.deven-info
+    EOF
+  }
+
+}
+
+locals {
+  public_ip = fileexists("${aws_ecs_service.deven_service.name}-public-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-public-ip.deven-info"))) : ""
+  private_ip = fileexists("${aws_ecs_service.deven_service.name}-private-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-private-ip.deven-info"))) : ""
+}
+
+output "deven_instance" {
+
+  value = aws_ecs_service.deven_service.network_configuration[0].assign_public_ip ? local.public_ip : local.private_ip
+  
+  depends_on = [
+    aws_ecs_service.deven_service
+  ]
 
 }
 

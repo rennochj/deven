@@ -34,3 +34,13 @@ variable "deven_availability_zone" {
   default     = "us-west-2a"
 }
 
+variable "deven_subnet" {
+  description = "The subnet for the deven instance"
+  type        = string
+}
+
+variable "deven_vpc" {
+  description = "The vpc for the deven instance"
+  type        = string
+}
+

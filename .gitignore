@@ -3,3 +3,4 @@
 **/*.tfstate.lock.info
 **/*.tfstate.backup
 **/*.lock.hcl
+**/*.deven-info

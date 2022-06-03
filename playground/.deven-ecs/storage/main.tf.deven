@@ -15,6 +15,8 @@ module "deven_efs" {
   # aws_region = "us-west-2"
   # deven_availability_zone = "us-west-2a"
   deven_workspace = "$DEVEN_WORKSPACE_NAME"
+  deven_subnet = "subnet-0d0351247de135416"
+  deven_vpc = "vpc-09fb1850758172ba1"
 
 }
 

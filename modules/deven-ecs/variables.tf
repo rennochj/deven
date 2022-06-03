@@ -66,5 +66,11 @@ variable "registry_username" {
 
 variable "registry_password" {
   description = "The password (PAT) for to the ghcr.io package repository "
+  sensitive = true
+}
+
+variable "assign_public_ip" {
+  description = "Assign public ip"
+  sensitive = false
 }
 
