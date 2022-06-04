@@ -52,14 +52,16 @@ RUN addgroup -S $GROUP -g 1000 && \
     chmod 0440 /etc/sudoers && \
     echo "$USER:$(echo $RANDOM | md5sum | head -c 20; echo;)" | chpasswd
 
+COPY --chown=$USER:$GROUP dotfiles/* /home/$USER
+COPY --chown=$USER:$GROUP scripts/* /usr/local/bin
+
 RUN mkdir /home/$USER/.ssh && chmod 700 /home/$USER/.ssh \
     && touch /home/$USER/.ssh/authorized_keys && chmod 600 /home/$USER/.ssh/authorized_keys \
     && chown $USER /home/$USER/.ssh && chown $USER /home/$USER/.ssh/authorized_keys
 
-COPY dotfiles/ /home/$USER
-
 RUN mkdir /workspace && chown deven:root /workspace && chmod 770 /workspace
 RUN chmod 770 /usr/bin/kubectl && \
-    chown root:deven /usr/bin/kubectl
+    chown root:deven /usr/bin/kubectl && \
+    chmod 770 /usr/local/bin/*
 
 CMD ["/usr/sbin/sshd","-D"]

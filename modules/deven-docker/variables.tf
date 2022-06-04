@@ -34,10 +34,16 @@ variable "docker_config_file" {
   default     = "~/.docker/config.json"
 }
 
-variable "public_key_file" {
+# variable "public_key_file" {
+#   description = "Provided public key for ssh login (authorized_keys)"
+#   type        = string
+#   default     = "~/.ssh/id_rsa.pub"
+# }
+
+variable "private_key_file" {
   description = "Provided public key for ssh login (authorized_keys)"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  default     = "~/.ssh/id_rsa"
 }
 
 variable "deven_workspace" {
@@ -58,3 +64,8 @@ variable "workspace_git_repo" {
   default     = ""
 }
 
+variable "initiatization_commands" {
+  description = "Initialization commands to execute after instantiations"
+  type        = list(string)
+  default     = []
+}

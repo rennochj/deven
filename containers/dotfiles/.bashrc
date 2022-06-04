@@ -7,6 +7,7 @@ fi
 
 if [[ -f /workspace/.bashrc ]]; then
     source /workspace/.bashrc
+    export HISTFILE=/workspace/.zsh_history
 fi
 
 # Uncomment the following line if you don't like systemctl's auto-paging feature:

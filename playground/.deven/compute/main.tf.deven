@@ -17,8 +17,9 @@ module "deven_docker" {
   #  docker_host = "localhost"
   #  docker_ssh_opts = []
   #  docker_username = null
-  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
+  private_key_file = "$DEVEN_SSH_PRIVATE_KEY"
   #  workspace_git_repo = ""
+  initiatization_commands = []
 
 }
 

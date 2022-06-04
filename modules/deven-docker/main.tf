@@ -1,5 +1,6 @@
 locals {
-  public_key                 = file(pathexpand(var.public_key_file))
+  public_key                 = file(pathexpand("${var.private_key_file}.pub"))
+  private_key                = file(pathexpand(var.private_key_file))
   docker_host = var.docker_host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker_username}@${var.docker_host}"
 }
 
@@ -26,7 +27,8 @@ provider "docker" {
 
 resource "docker_image" "deven_image" {
   name         = var.deven_image
-  keep_locally = true
+  keep_locally = false
+  force_remove = true
 }
 
 resource "docker_container" "deven" {
@@ -37,6 +39,10 @@ resource "docker_container" "deven" {
     internal = 22
     external = var.deven_ssh_port
   }
+
+  env = [
+    "SSH_PUBLIC_KEY=${local.public_key}"
+  ]
 
   volumes {
     host_path      = "/var/run/docker.sock"
@@ -51,16 +57,32 @@ resource "docker_container" "deven" {
 
   provisioner "local-exec" {
     command = <<-EOT
-    DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c "echo '${local.public_key}' > /home/deven/.ssh/authorized_keys"
-    EOT
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c 'chown deven -R /workspace && chown deven -R /home/deven  && chown deven /var/run/docker.sock'
+    DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c "deven-initialize"
     EOT
   }
 
 }
 
+resource "null_resource" "remote_execute" {
 
+  count = length(var.initiatization_commands) > 0 ? 1 : 0
+
+  depends_on = [docker_container.deven]
+
+  provisioner "remote-exec" {
+    
+    connection {
+
+      type = "ssh"
+      user = "deven"
+      private_key = local.private_key
+      host = var.docker_host
+      port = var.deven_ssh_port
+    
+    }
+    
+    inline = var.initiatization_commands
+
+  }
+
+}

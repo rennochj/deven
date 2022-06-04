@@ -1,0 +1,21 @@
+#!/bin/bash
+
+touch /workspace/.zshrc
+touch /workspace/.bashrc
+
+if [[ ! -z $SSH_PUBLIC_KEY ]]
+then
+
+    echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys
+    unset SSH_PUBLIC_KEY
+
+fi
+
+if [[ -f /var/run/docker.sock ]]
+then
+
+    chown deven /var/run/docker.sock
+
+fi
+
+chown deven -R /workspace /home/deven
