@@ -67,10 +67,10 @@ variable "deven_instance_name" {
   default     = "deven"
 }
 
-variable "deven_instance_user_data" {
-  description = "Command to be executed following instantiation"
-  type        = string
-  default     = ""
+variable "initiatization_commands" {
+  description = "Initialization commands to execute after instantiations"
+  type        = list(string)
+  default     = []
 }
 
 variable "deven_idle_eval_periods" {

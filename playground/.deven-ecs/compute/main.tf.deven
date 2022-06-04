@@ -19,7 +19,7 @@ module "deven_ecs" {
   # aws_profile = "default"
   # aws_region = "us-west-2"
   deven_ecs_cluster = "deven-cluster"
-  deven_efs_id = "$(terraform -chdir=$SCRIPT_DIRECTORY/../storage show -json | jq -r '.values.outputs.efs_workspace_id.value')"
+  deven_efs_id = "$(terraform -chdir=$SCRIPT_DIRECTORY/../storage output -raw efs_workspace_id)"
   # deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
   private_key_file = "$DEVEN_SSH_PRIVATE_KEY"

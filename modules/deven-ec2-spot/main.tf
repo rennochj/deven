@@ -81,11 +81,10 @@ resource "aws_spot_instance_request" "deven_spot" {
   user_data = <<EOF
     #!/bin/bash
     mkdir /workspace
-    mkfs -t xfs /dev/sdb
     mount /dev/sdb /workspace
     echo '/dev/sdb /workspace xfs defaults,nofail 0 2' >> /etc/fstab
     chown ec2-user /workspace
-    ${var.deven_instance_user_data}
+    ${join("\n", var.initiatization_commands)}
   EOF
 
 }
