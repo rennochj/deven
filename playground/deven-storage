@@ -7,6 +7,7 @@ set -e
 DEVEN_DIRECTORY="./.deven"
 DEVEN_DESTROY=""
 DEVEN_MODULE_LOCATION="/Users/rennochj/code/deven/modules"
+DEVEN_WORKSPACE_NAME="deven-workspace"
 
 # -- Process options --------------------------------------------------------------------------------------------------
 
@@ -54,5 +55,26 @@ done
 
 # -- Execute ----------------------------------------------------------------------------------------------------------
 
-terraform -chdir="$DEVEN_DIRECTORY/storage" init -upgrade
-terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY
+if [[ -z $DEVEN_DESTROY ]]
+then
+
+  terraform -chdir="$DEVEN_DIRECTORY/storage" init -upgrade
+  terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY
+
+else
+
+  echo "Stoage is marked for destruction. Enter '$DEVEN_WORKSPACE_NAME' to confirm deletion."
+  read confirmation
+
+  if [[ $DEVEN_WORKSPACE_NAME == $confirmation ]]
+  then
+
+    terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY
+
+  else
+
+    echo "Storage is retained."
+
+  fi
+
+fi

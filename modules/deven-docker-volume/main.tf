@@ -32,27 +32,3 @@ resource "docker_volume" "deven_workspace" {
   name = var.deven_workspace
 }
 
-resource "docker_container" "initialize_workspace" {
-
-  count = "${var.workspace_git_repo}" != "" ? 1 : 0
-
-  image = docker_image.alpine_git.name
-  name  = "deven_initialize_workspace"
-
-  volumes {
-    volume_name    = docker_volume.deven_workspace.name
-    container_path = "/workspace"
-    read_only      = false
-  }
-
-  command = [
-    "bash",
-    "-c",
-    "if [ -n '${var.workspace_git_repo}' ]; then cd /workspace ; chown deven -R /workspace ; git clone '${var.workspace_git_repo}' ; fi"
-  ]
-
-  tty      = true
-  must_run = false
-  rm       = true
-
-}

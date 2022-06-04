@@ -7,10 +7,10 @@ variable "registry_password" {
   description = "The password (PAT) for to the ghcr.io package repository "
 }
 
-variable "public_key_file" {
-  description = "Provided public key for ssh login (authorized_keys)"
+variable "private_key_file" {
+  description = "Provided private key for ssh login (authorized_keys)"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  default     = "~/.ssh/id_rsa"
 }
 
 variable "deven_image" {
@@ -53,4 +53,10 @@ variable "kubernetes_config" {
   description = "The path to the kubernetes configuration file"
   type        = string
   default     = "~/.kube/config"
+}
+
+variable "initiatization_commands" {
+  description = "Initialization commands to execute after instantiations"
+  type        = list(string)
+  default     = []
 }

@@ -1,5 +1,6 @@
 locals {
-  public_key                 = file(pathexpand(var.public_key_file))
+  private_key               = file(pathexpand("${var.private_key_file}"))
+  public_key                 = file(pathexpand("${var.private_key_file}.pub"))
   kubernetes_config_expanded = pathexpand(var.kubernetes_config)
 }
 
@@ -7,7 +8,7 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.0.0"
+      version = ">= 2.11.0"
     }
   }
 }
@@ -74,6 +75,10 @@ resource "kubernetes_pod" "deven" {
     container {
       image = var.deven_image
       name  = "deven-container"
+      env {
+        name  = "SSH_PUBLIC_KEY"
+        value = local.public_key
+      }
       volume_mount {
         name       = var.deven_workspace
         mount_path = "/workspace"
@@ -95,24 +100,21 @@ resource "kubernetes_pod" "deven" {
     }
   }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "echo '${local.public_key}' > /home/deven/.ssh/authorized_keys"
-    EOT
-  }
+  # provisioner "local-exec" {
+  #   command = <<-EOT
+  #   KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "echo '${local.public_key}' > /home/deven/.ssh/authorized_keys"
+  #   EOT
+  # }
 
   provisioner "local-exec" {
     command = <<-EOT
-    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
-    EOT
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
+    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "deven-initialize"
     KUBECONFIG=${var.kubernetes_config} nohup kubectl port-forward --namespace ${var.deven_namespace} ${var.deven_instance_name} ${var.deven_ssh_port}:22 > /dev/null 2>&1 &
     disown
     EOT
   }
+
+    # KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
 
   provisioner "local-exec" {
     when = destroy
@@ -123,3 +125,26 @@ resource "kubernetes_pod" "deven" {
 
 }
 
+resource "null_resource" "initialization" {
+
+  count = length(var.initiatization_commands) > 0 ? 1 : 0
+
+  depends_on = [kubernetes_pod.deven]
+
+  provisioner "remote-exec" {
+    
+    connection {
+
+      type = "ssh"
+      user = "deven"
+      private_key = local.private_key
+      host = "localhost"
+      port = var.deven_ssh_port
+    
+    }
+    
+    inline = var.initiatization_commands
+
+  }
+
+}

@@ -34,14 +34,8 @@ variable "docker_config_file" {
   default     = "~/.docker/config.json"
 }
 
-# variable "public_key_file" {
-#   description = "Provided public key for ssh login (authorized_keys)"
-#   type        = string
-#   default     = "~/.ssh/id_rsa.pub"
-# }
-
 variable "private_key_file" {
-  description = "Provided public key for ssh login (authorized_keys)"
+  description = "Provided private key for ssh login (authorized_keys)"
   type        = string
   default     = "~/.ssh/id_rsa"
 }
@@ -56,12 +50,6 @@ variable "deven_ssh_port" {
   description = "Exposed port for ssh"
   type        = number
   default     = 2222
-}
-
-variable "workspace_git_repo" {
-  description = "URL for GitHub repo"
-  type        = string
-  default     = ""
 }
 
 variable "initiatization_commands" {

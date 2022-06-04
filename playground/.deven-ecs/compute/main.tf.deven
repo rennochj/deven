@@ -22,11 +22,12 @@ module "deven_ecs" {
   deven_efs_id = "$(terraform -chdir=$SCRIPT_DIRECTORY/../storage show -json | jq -r '.values.outputs.efs_workspace_id.value')"
   # deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
-  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
+  private_key_file = "$DEVEN_SSH_PRIVATE_KEY"
   deven_subnet = "subnet-0d0351247de135416"
   deven_vpc = "vpc-09fb1850758172ba1"
   registry_username = "$GHCR_USER"
   registry_password = "$GHCR_PAT"
+  initiatization_commands = []
 
 }
 

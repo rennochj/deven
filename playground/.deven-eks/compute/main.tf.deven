@@ -19,9 +19,10 @@ module "deven_eks" {
   deven_workspace     = "$DEVEN_WORKSPACE_NAME"
   deven_workspace_capacity = "10"
   kubernetes_config = "~/.kube/deven-eks.config"
-  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
+  private_key_file = "$DEVEN_SSH_PRIVATE_KEY"
   registry_password = "$GHCR_PAT"
   registry_username = "$GHCR_USER"
+  initiatization_commands = []
 
 }
 

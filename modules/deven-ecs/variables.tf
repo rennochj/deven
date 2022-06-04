@@ -22,10 +22,10 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
-variable "public_key_file" {
-  description = "Provided public key for ssh login (authorized_keys)"
+variable "private_key_file" {
+  description = "Provided private key for ssh login (authorized_keys)"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  default     = "~/.ssh/id_rsa"
 }
 
 variable "deven_image" {
@@ -74,3 +74,8 @@ variable "assign_public_ip" {
   sensitive = false
 }
 
+variable "initiatization_commands" {
+  description = "Initialization commands to execute after instantiations"
+  type        = list(string)
+  default     = []
+}

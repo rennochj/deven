@@ -15,7 +15,6 @@ module "deven_docker_volume" {
   #  docker_ssh_opts = []
   #  docker_username = null
   #  initialization_container = "ghcr.io/rennochj/deven-alpine-base:latest"
-  workspace_git_repo = "https://github.com/rennochj/deven.git"
 
 }
 

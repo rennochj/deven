@@ -1,5 +1,6 @@
 locals {
-  public_key                 = file(pathexpand(var.public_key_file))
+  public_key                 = file(pathexpand("${var.private_key_file}.pub"))
+  private_key                = file(pathexpand("${var.private_key_file}"))
 }
 
 provider "aws" {
@@ -139,7 +140,10 @@ resource "aws_ecs_task_definition" "deven_task" {
           "value": "${local.public_key}"
         }
       ]
-      command = ["/bin/bash", "-c", "echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys && chown deven -R /home/deven /workspace && /usr/sbin/sshd -D"]
+      command = [
+        "/bin/bash", "-c", "deven-initialize && /usr/sbin/sshd -D"
+        # "/bin/bash", "-c", "echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys && chown deven -R /home/deven /workspace && /usr/sbin/sshd -D"
+      ]
       essential = true
       mountPoints = [
         {
@@ -166,12 +170,6 @@ resource "aws_ecs_service" "deven_service" {
   launch_type     = "FARGATE"
   scheduling_strategy  = "REPLICA"
   wait_for_steady_state = true
-
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.deven_load_balancer.arn
-  #   container_name   = "${var.deven_instance_name}"
-  #   container_port   = 22
-  # }
 
   network_configuration {
     subnets         = ["${var.deven_subnet}"]
@@ -202,13 +200,28 @@ locals {
   private_ip = fileexists("${aws_ecs_service.deven_service.name}-private-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-private-ip.deven-info"))) : ""
 }
 
-output "deven_instance" {
+resource "null_resource" "initialization" {
 
-  value = aws_ecs_service.deven_service.network_configuration[0].assign_public_ip ? local.public_ip : local.private_ip
-  
-  depends_on = [
-    aws_ecs_service.deven_service
-  ]
+  count = length(var.initiatization_commands) > 0 ? 1 : 0
+
+  depends_on = [aws_ecs_service.deven_service]
+
+  provisioner "remote-exec" {
+    
+    connection {
+
+      type = "ssh"
+      user = "deven"
+      private_key = local.private_key
+      host = aws_ecs_service.deven_service.network_configuration[0].assign_public_ip ? local.public_ip : local.private_ip
+      port = 22
+    
+    }
+    
+    inline = var.initiatization_commands
+
+  }
 
 }
+
 

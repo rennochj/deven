@@ -28,12 +28,6 @@ variable "deven_workspace" {
   default     = "deven_workspace"
 }
 
-variable "workspace_git_repo" {
-  description = "URL for GitHub repo"
-  type        = string
-  default     = ""
-}
-
 variable "initialization_container" {
   description = "Container for initializing the workspace."
   type        = string

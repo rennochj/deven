@@ -63,7 +63,7 @@ resource "docker_container" "deven" {
 
 }
 
-resource "null_resource" "remote_execute" {
+resource "null_resource" "initialization" {
 
   count = length(var.initiatization_commands) > 0 ? 1 : 0
 
