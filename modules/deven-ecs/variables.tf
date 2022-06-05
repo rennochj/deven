@@ -42,7 +42,7 @@ variable "deven_instance_name" {
 
 variable "deven_efs_id" {
   description = "The id of the deven efs drive"
-  type = string
+  type        = string
 }
 
 variable "deven_vpc" {
@@ -66,16 +66,16 @@ variable "registry_username" {
 
 variable "registry_password" {
   description = "The password (PAT) for to the ghcr.io package repository "
-  sensitive = true
+  sensitive   = true
 }
 
 variable "assign_public_ip" {
   description = "Assign public ip"
-  sensitive = false
+  sensitive   = false
 }
 
-variable "initiatization_commands" {
+variable "initial_script" {
   description = "Initialization commands to execute after instantiations"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = "initial-script"
 }

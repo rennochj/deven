@@ -24,18 +24,18 @@ resource "kubernetes_namespace" "deven" {
 resource "kubernetes_persistent_volume" "deven_workspace_pv" {
 
   metadata {
-    name = "${var.deven_workspace}"
+    name = var.deven_workspace
   }
 
   spec {
     capacity = {
       storage = "${var.deven_workspace_capacity}"
     }
-    access_modes = ["ReadWriteMany"]
-    storage_class_name = "${var.deven_workspace_storage_class}"
+    access_modes       = ["ReadWriteMany"]
+    storage_class_name = var.deven_workspace_storage_class
     persistent_volume_source {
       host_path {
-        path = "${var.deven_workspace_hostpath}"
+        path = var.deven_workspace_hostpath
         type = "Directory"
       }
     }

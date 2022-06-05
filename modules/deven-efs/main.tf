@@ -17,7 +17,7 @@ resource "random_string" "random_suffix" {
 resource "aws_security_group" "deven_efs_sg" {
   name        = "deven_efs_sg-${random_string.random_suffix.result}"
   description = "deven security group"
-  vpc_id      = "${var.deven_vpc}"
+  vpc_id      = var.deven_vpc
 
   # To Allow EFS Access
   ingress {
@@ -47,7 +47,7 @@ resource "aws_efs_file_system" "deven_efs" {
     transition_to_ia = "AFTER_30_DAYS"
   }
 
-  availability_zone_name = "${var.deven_availability_zone}"
+  availability_zone_name = var.deven_availability_zone
 
   tags = {
     Name = "${var.deven_workspace}"
@@ -56,8 +56,8 @@ resource "aws_efs_file_system" "deven_efs" {
 }
 
 resource "aws_efs_mount_target" "deven_mount" {
-  file_system_id = aws_efs_file_system.deven_efs.id
-  subnet_id      = "${var.deven_subnet}"
+  file_system_id  = aws_efs_file_system.deven_efs.id
+  subnet_id       = var.deven_subnet
   security_groups = [aws_security_group.deven_efs_sg.id]
 }
 

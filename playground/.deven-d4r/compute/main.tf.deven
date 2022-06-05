@@ -18,7 +18,7 @@ module "deven_docker" {
   #  docker_ssh_opts = []
   docker_username = "$USER"
   private_key_file     = "$DEVEN_SSH_PRIVATE_KEY"
-  initiatization_commands = []
+  # initial_script = "initial-script"
 
 }
 

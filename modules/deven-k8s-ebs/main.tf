@@ -48,18 +48,18 @@ resource "kubernetes_namespace" "deven" {
 resource "kubernetes_persistent_volume" "deven_workspace_pv" {
 
   metadata {
-    name = "${var.deven_workspace}"
+    name = var.deven_workspace
   }
 
   spec {
     capacity = {
       storage = "${var.deven_workspace_capacity}"
     }
-    access_modes = ["ReadWriteMany"]
-    storage_class_name = "${var.deven_workspace_storage_class}"
+    access_modes       = ["ReadWriteMany"]
+    storage_class_name = var.deven_workspace_storage_class
     persistent_volume_source {
       aws_elastic_block_store {
-        fs_type = "xfs"
+        fs_type   = "xfs"
         read_only = false
         volume_id = aws_ebs_volume.deven_volume_ebs.id
       }

@@ -55,8 +55,8 @@ variable "kubernetes_config" {
   default     = "~/.kube/config"
 }
 
-variable "initiatization_commands" {
+variable "initial_script" {
   description = "Initialization commands to execute after instantiations"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = "initial-script"
 }

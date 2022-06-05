@@ -1,5 +1,5 @@
 locals {
-  private_key               = file(pathexpand("${var.private_key_file}"))
+  private_key                = file(pathexpand("${var.private_key_file}"))
   public_key                 = file(pathexpand("${var.private_key_file}.pub"))
   kubernetes_config_expanded = pathexpand(var.kubernetes_config)
 }
@@ -20,7 +20,7 @@ provider "kubernetes" {
 resource "kubernetes_secret" "deven_secret" {
   metadata {
     name      = "package-ghcr-io"
-    namespace = "${var.deven_namespace}"
+    namespace = var.deven_namespace
   }
 
   type = "kubernetes.io/dockerconfigjson"
@@ -41,8 +41,8 @@ resource "kubernetes_secret" "deven_secret" {
 resource "kubernetes_persistent_volume_claim" "deven_workspace_pvc" {
 
   metadata {
-    name = "${var.deven_workspace}"
-    namespace = "${var.deven_namespace}"
+    name      = var.deven_workspace
+    namespace = var.deven_namespace
   }
   spec {
     access_modes = ["ReadWriteMany"]
@@ -51,7 +51,7 @@ resource "kubernetes_persistent_volume_claim" "deven_workspace_pvc" {
         storage = "${var.deven_workspace_capacity}"
       }
     }
-    volume_name = "${var.deven_workspace}"
+    volume_name = var.deven_workspace
   }
 
 }
@@ -60,7 +60,7 @@ resource "kubernetes_pod" "deven" {
 
   metadata {
     name      = var.deven_instance_name
-    namespace = "${var.deven_namespace}"
+    namespace = var.deven_namespace
     labels = {
       app = "deven-app"
     }
@@ -91,7 +91,7 @@ resource "kubernetes_pod" "deven" {
     volume {
       name = var.deven_workspace
       persistent_volume_claim {
-        claim_name = "${kubernetes_persistent_volume_claim.deven_workspace_pvc.metadata.0.name}"
+        claim_name = kubernetes_persistent_volume_claim.deven_workspace_pvc.metadata.0.name
       }
     }
 
@@ -114,10 +114,10 @@ resource "kubernetes_pod" "deven" {
     EOT
   }
 
-    # KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
+  # KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "chown -R deven /workspace && chown -R deven /home/deven "
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = <<-EOT
     pkill -f "kubectl port-forward"
     EOT
@@ -127,23 +127,23 @@ resource "kubernetes_pod" "deven" {
 
 resource "null_resource" "initialization" {
 
-  count = length(var.initiatization_commands) > 0 ? 1 : 0
+  count = fileexists(var.initial_script) ? 1 : 0
 
   depends_on = [kubernetes_pod.deven]
 
   provisioner "remote-exec" {
-    
+
     connection {
 
-      type = "ssh"
-      user = "deven"
+      type        = "ssh"
+      user        = "deven"
       private_key = local.private_key
-      host = "localhost"
-      port = var.deven_ssh_port
-    
+      host        = "localhost"
+      port        = var.deven_ssh_port
+
     }
-    
-    inline = var.initiatization_commands
+
+    script = var.initial_script
 
   }
 

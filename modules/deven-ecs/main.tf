@@ -1,6 +1,6 @@
 locals {
-  public_key                 = file(pathexpand("${var.private_key_file}.pub"))
-  private_key                = file(pathexpand("${var.private_key_file}"))
+  public_key  = file(pathexpand("${var.private_key_file}.pub"))
+  private_key = file(pathexpand("${var.private_key_file}"))
 }
 
 provider "aws" {
@@ -41,7 +41,7 @@ resource "aws_secretsmanager_secret_version" "ghcr_repository_secret" {
 resource "aws_security_group" "deven_ecs_sg" {
   name        = "deven_ecs_sg-${random_string.random_suffix.result}"
   description = "deven security group"
-  vpc_id      = "${var.deven_vpc}"
+  vpc_id      = var.deven_vpc
 
   # To Allow SSH Transport
   ingress {
@@ -122,8 +122,8 @@ resource "aws_ecs_task_definition" "deven_task" {
     name = "deven-workspace"
 
     efs_volume_configuration {
-      file_system_id          = "${var.deven_efs_id}"
-      root_directory          = "/"
+      file_system_id = var.deven_efs_id
+      root_directory = "/"
     }
   }
 
@@ -136,8 +136,8 @@ resource "aws_ecs_task_definition" "deven_task" {
       }
       environment = [
         {
-          "name": "SSH_PUBLIC_KEY",
-          "value": "${local.public_key}"
+          "name" : "SSH_PUBLIC_KEY",
+          "value" : "${local.public_key}"
         }
       ]
       command = [
@@ -147,9 +147,9 @@ resource "aws_ecs_task_definition" "deven_task" {
       essential = true
       mountPoints = [
         {
-          "sourceVolume" = "deven-workspace",
+          "sourceVolume"  = "deven-workspace",
           "containerPath" = "/workspace",
-          "readOnly" = false
+          "readOnly"      = false
         }
       ]
       portMappings = [
@@ -163,16 +163,16 @@ resource "aws_ecs_task_definition" "deven_task" {
 }
 
 resource "aws_ecs_service" "deven_service" {
-  name            = "deven-service-${random_string.random_suffix.result}"
-  cluster         = "${var.deven_ecs_cluster}"
-  task_definition = aws_ecs_task_definition.deven_task.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  scheduling_strategy  = "REPLICA"
+  name                  = "deven-service-${random_string.random_suffix.result}"
+  cluster               = var.deven_ecs_cluster
+  task_definition       = aws_ecs_task_definition.deven_task.arn
+  desired_count         = 1
+  launch_type           = "FARGATE"
+  scheduling_strategy   = "REPLICA"
   wait_for_steady_state = true
 
   network_configuration {
-    subnets         = ["${var.deven_subnet}"]
+    subnets          = ["${var.deven_subnet}"]
     assign_public_ip = var.assign_public_ip
     security_groups = [
       aws_security_group.deven_ecs_sg.id
@@ -187,7 +187,7 @@ resource "aws_ecs_service" "deven_service" {
   }
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = <<EOF
       rm *-public-ip.deven-info *-private-ip.deven-info
     EOF
@@ -196,29 +196,29 @@ resource "aws_ecs_service" "deven_service" {
 }
 
 locals {
-  public_ip = fileexists("${aws_ecs_service.deven_service.name}-public-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-public-ip.deven-info"))) : ""
+  public_ip  = fileexists("${aws_ecs_service.deven_service.name}-public-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-public-ip.deven-info"))) : ""
   private_ip = fileexists("${aws_ecs_service.deven_service.name}-private-ip.deven-info") ? trimspace(chomp(file("${aws_ecs_service.deven_service.name}-private-ip.deven-info"))) : ""
 }
 
 resource "null_resource" "initialization" {
 
-  count = length(var.initiatization_commands) > 0 ? 1 : 0
+  count = fileexists(var.initial_script) ? 1 : 0
 
   depends_on = [aws_ecs_service.deven_service]
 
   provisioner "remote-exec" {
-    
+
     connection {
 
-      type = "ssh"
-      user = "deven"
+      type        = "ssh"
+      user        = "deven"
       private_key = local.private_key
-      host = aws_ecs_service.deven_service.network_configuration[0].assign_public_ip ? local.public_ip : local.private_ip
-      port = 22
-    
+      host        = aws_ecs_service.deven_service.network_configuration[0].assign_public_ip ? local.public_ip : local.private_ip
+      port        = 22
+
     }
-    
-    inline = var.initiatization_commands
+
+    script = var.initial_script
 
   }
 

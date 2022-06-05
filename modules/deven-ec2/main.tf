@@ -64,6 +64,10 @@ resource "aws_security_group" "deven_sg" {
   }
 }
 
+locals {
+  initial_script = fileexists(var.initial_script) ? file(var.initial_script) : ""
+}
+
 resource "aws_instance" "deven" {
 
   ami           = data.aws_ami.deven_ami.id
@@ -73,7 +77,7 @@ resource "aws_instance" "deven" {
     Name = var.deven_instance_name
   }
 
-  subnet_id = var.aws_subnet
+  subnet_id              = var.aws_subnet
   vpc_security_group_ids = [aws_security_group.deven_sg.id]
 
   key_name = aws_key_pair.deven_key.key_name
@@ -84,19 +88,15 @@ resource "aws_instance" "deven" {
     mount /dev/sdb /workspace
     echo '/dev/sdb /workspace xfs defaults,nofail 0 2' >> /etc/fstab
     chown ec2-user /workspace
-    ${join("\n", var.initiatization_commands)}
+    ${local.initial_script}
   EOF
-
-    # mkfs -t xfs /dev/sdb
-    # touch /home/ec2-user/pre-execute
-    # ${join("\n", var.initiatization_commands)}
 
 }
 
 resource "aws_volume_attachment" "mountvolumetoec2" {
-  device_name = "/dev/sdb"
-  instance_id = aws_instance.deven.id
-  volume_id   = var.deven_workspace_volume_id
+  device_name                    = "/dev/sdb"
+  instance_id                    = aws_instance.deven.id
+  volume_id                      = var.deven_workspace_volume_id
   stop_instance_before_detaching = true
 }
 

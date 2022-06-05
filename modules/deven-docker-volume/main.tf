@@ -23,11 +23,6 @@ provider "docker" {
 
 }
 
-resource "docker_image" "alpine_git" {
-  name         = var.initialization_container
-  keep_locally = false
-}
-
 resource "docker_volume" "deven_workspace" {
   name = var.deven_workspace
 }

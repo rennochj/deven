@@ -1,6 +1,6 @@
 locals {
-  public_key                 = file(pathexpand("${var.private_key_file}.pub"))
-  private_key                = file(pathexpand(var.private_key_file))
+  public_key  = file(pathexpand("${var.private_key_file}.pub"))
+  private_key = file(pathexpand(var.private_key_file))
   docker_host = var.docker_host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker_username}@${var.docker_host}"
 }
 
@@ -65,23 +65,23 @@ resource "docker_container" "deven" {
 
 resource "null_resource" "initialization" {
 
-  count = length(var.initiatization_commands) > 0 ? 1 : 0
+  count = fileexists(var.initial_script) ? 1 : 0
 
   depends_on = [docker_container.deven]
 
   provisioner "remote-exec" {
-    
+
     connection {
 
-      type = "ssh"
-      user = "deven"
+      type        = "ssh"
+      user        = "deven"
       private_key = local.private_key
-      host = var.docker_host
-      port = var.deven_ssh_port
-    
+      host        = var.docker_host
+      port        = var.deven_ssh_port
+
     }
-    
-    inline = var.initiatization_commands
+
+    script = var.initial_script
 
   }
 

@@ -1,5 +1,5 @@
 locals {
-  public_key                 = file(pathexpand(var.public_key_file))
+  public_key = file(pathexpand(var.public_key_file))
 }
 
 provider "aws" {

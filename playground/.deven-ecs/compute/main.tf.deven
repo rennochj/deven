@@ -27,7 +27,7 @@ module "deven_ecs" {
   deven_vpc = "vpc-09fb1850758172ba1"
   registry_username = "$GHCR_USER"
   registry_password = "$GHCR_PAT"
-  initiatization_commands = []
+  # initial_script = "initial-script"
 
 }
 

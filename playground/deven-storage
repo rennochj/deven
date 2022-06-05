@@ -51,6 +51,7 @@ echo "DEVEN Environment Variables ---------------------------------------------"
 
 for file in "$DEVEN_DIRECTORY/storage/*.deven"; do
     source $file
+    terraform -chdir=$DEVEN_DIRECTORY/storage fmt
 done
 
 # -- Execute ----------------------------------------------------------------------------------------------------------

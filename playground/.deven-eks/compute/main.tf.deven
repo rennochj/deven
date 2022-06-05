@@ -22,7 +22,7 @@ module "deven_eks" {
   private_key_file = "$DEVEN_SSH_PRIVATE_KEY"
   registry_password = "$GHCR_PAT"
   registry_username = "$GHCR_USER"
-  initiatization_commands = []
+  # initial_script = "initial-script"
 
 }
 

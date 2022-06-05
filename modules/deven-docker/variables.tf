@@ -52,8 +52,8 @@ variable "deven_ssh_port" {
   default     = 2222
 }
 
-variable "initiatization_commands" {
+variable "initial_script" {
   description = "Initialization commands to execute after instantiations"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = "initial-script"
 }

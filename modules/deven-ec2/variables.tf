@@ -67,10 +67,10 @@ variable "deven_instance_name" {
   default     = "deven"
 }
 
-variable "initiatization_commands" {
+variable "initial_script" {
   description = "Initialization commands to execute after instantiations"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = "initial-script"
 }
 
 variable "deven_idle_eval_periods" {

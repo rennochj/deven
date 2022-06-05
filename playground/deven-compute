@@ -58,6 +58,7 @@ fi
 
 for file in "$DEVEN_DIRECTORY/compute/*.deven"; do
     source $file
+    terraform -chdir=$DEVEN_DIRECTORY/compute fmt
 done
 
 # -- Create SSH Keys --------------------------------------------------------------------------------------------------
