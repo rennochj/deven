@@ -6,7 +6,7 @@ set -e
 
 DEVEN_DIRECTORY="./.deven"
 DEVEN_DESTROY=""
-DEVEN_MODULE_LOCATION="/Users/rennochj/code/deven/modules"
+DEVEN_MODULE_LOCATION=../../../modules
 DEVEN_WORKSPACE_NAME="deven-workspace"
 
 # -- Process options --------------------------------------------------------------------------------------------------

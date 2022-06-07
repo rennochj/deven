@@ -1,6 +1,6 @@
 #!/bin/bash
 
 export DEVEN_INSTANCE_NAME="deven-eks"
-export DEVEN_WORKSPACE_NAME="$USER-$DEVEN_INSTANCE_NAME-workspace"
+export DEVEN_WORKSPACE_NAME="$(whoami)-$DEVEN_INSTANCE_NAME-workspace"
 export DEVEN_SSH_PRIVATE_KEY="$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa"
 

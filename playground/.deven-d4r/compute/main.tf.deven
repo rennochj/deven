@@ -16,7 +16,7 @@ module "deven_docker" {
   #  docker_config_file = "~/.docker/config.json"
   docker_host = "d4r"
   #  docker_ssh_opts = []
-  docker_username = "$USER"
+  docker_username = "$(whoami)"
   private_key_file     = "$DEVEN_SSH_PRIVATE_KEY"
   # initial_script = "initial-script"
 
