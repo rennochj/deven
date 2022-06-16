@@ -14,3 +14,11 @@ fi
 # export SYSTEMD_PAGER=
 
 # User specific aliases and functions
+
+if [[ -f /home/deven/.env ]]
+then
+
+    source /home/deven/.env
+
+fi
+

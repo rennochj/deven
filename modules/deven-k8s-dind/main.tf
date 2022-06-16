@@ -88,11 +88,35 @@ resource "kubernetes_pod" "deven" {
       }
     }
 
+    container {
+      image = "docker:dind"
+      name  = "dind-container"
+      volume_mount {
+        name       = "docker-storage"
+        mount_path = "/var/lib/docker"
+      }
+      command = [
+        "dockerd",
+        "--host=127.0.0.1:2375"
+      ]
+      port {
+        container_port = 2375
+      }
+      security_context {
+        privileged = true
+      }
+    }
+
     volume {
       name = var.deven_workspace
       persistent_volume_claim {
         claim_name = kubernetes_persistent_volume_claim.deven_workspace_pvc.metadata.0.name
       }
+    }
+
+    volume {
+      name = "docker-storage"
+      empty_dir {}
     }
 
     security_context {
@@ -102,7 +126,7 @@ resource "kubernetes_pod" "deven" {
 
   provisioner "local-exec" {
     command = <<-EOT
-    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "deven-initialize"
+    KUBECONFIG="${local.kubernetes_config_expanded}" kubectl exec --namespace=${var.deven_namespace} ${var.deven_instance_name} -- bash -c "echo 'export DOCKER_HOST=tcp://127.0.0.1:2375' >> /home/deven/.env ; deven-initialize"
     KUBECONFIG=${var.kubernetes_config} nohup kubectl port-forward --namespace ${var.deven_namespace} ${var.deven_instance_name} ${var.deven_ssh_port}:22 > /dev/null 2>&1 &
     disown
     EOT
@@ -117,26 +141,26 @@ resource "kubernetes_pod" "deven" {
 
 }
 
-resource "null_resource" "initialization" {
+# resource "null_resource" "initialization" {
 
-  count = fileexists(var.initial_script) ? 1 : 0
+#   count = fileexists(var.initial_script) ? 1 : 0
 
-  depends_on = [kubernetes_pod.deven]
+#   depends_on = [kubernetes_pod.deven]
 
-  provisioner "remote-exec" {
+#   provisioner "remote-exec" {
 
-    connection {
+#     connection {
 
-      type        = "ssh"
-      user        = "deven"
-      private_key = local.private_key
-      host        = "localhost"
-      port        = var.deven_ssh_port
+#       type        = "ssh"
+#       user        = "deven"
+#       private_key = local.private_key
+#       host        = "localhost"
+#       port        = var.deven_ssh_port
 
-    }
+#     }
 
-    script = var.initial_script
+#     script = var.initial_script
 
-  }
+#   }
 
-}
+# }

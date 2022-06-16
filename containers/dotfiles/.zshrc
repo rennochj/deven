@@ -110,4 +110,9 @@ then
 
 fi
 
+if [[ -f /home/deven/.env ]]
+then
 
+    source /home/deven/.env
+
+fi

@@ -72,6 +72,8 @@ resource "aws_instance" "deven" {
 
   ami           = data.aws_ami.deven_ami.id
   instance_type = var.deven_instance_type
+  associate_public_ip_address = true
+  iam_instance_profile = "AmazonSSMRoleForInstancesQuickSetup"
 
   tags = {
     Name = var.deven_instance_name
@@ -85,6 +87,7 @@ resource "aws_instance" "deven" {
   user_data = <<EOF
     #!/bin/bash
     mkdir /workspace
+    [[ "/dev/xvdb: data" == $(file -s /dev/xvdb) ]] && mkfs -t xfs /dev/xvdb
     mount /dev/sdb /workspace
     echo '/dev/sdb /workspace xfs defaults,nofail 0 2' >> /etc/fstab
     chown ec2-user /workspace

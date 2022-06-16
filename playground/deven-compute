@@ -92,6 +92,14 @@ if [[ -z "$DEVEN_DESTROY" ]];
 then
 
   DEVEN_HOST=$(terraform -chdir="$DEVEN_DIRECTORY/compute" output -raw "host")
+  PROXY_COMMAND=$(terraform -chdir="$DEVEN_DIRECTORY/compute" output -raw "proxy_command")
+
+  if [[ -z $PROXY_COMMAND ]]
+  then
+    HOST_OR_PROXY="HostName $DEVEN_HOST"
+  else
+    HOST_OR_PROXY="ProxyCommand sh -c '$PROXY_COMMAND'"
+  fi
 
   if [ ! -d $DEVEN_SSH_HOME/config.d ]; then
 
@@ -106,7 +114,22 @@ then
   fi
 
   touch $DEVEN_SSH_HOME/config.d/$DEVEN_INSTANCE_NAME.config
-  printf "HOST $DEVEN_INSTANCE_NAME\n    HostName $DEVEN_HOST\n    User $DEVEN_SSH_USER\n    Port $DEVEN_SSH_PORT\n    IdentityFile $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n    NoHostAuthenticationForLocalhost no\n    LogLevel Error\n\n" > ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
+  # printf "HOST $DEVEN_INSTANCE_NAME\n    HostName $DEVEN_HOST\n    User $DEVEN_SSH_USER\n    Port $DEVEN_SSH_PORT\n    IdentityFile $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n    NoHostAuthenticationForLocalhost no\n    LogLevel Error\n\n" > ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
+  cat <<EOF > ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
+HOST $DEVEN_INSTANCE_NAME
+  HostName $DEVEN_HOST
+  ProxyCommand sh -c "$PROXY_COMMAND"
+  User $DEVEN_SSH_USER
+  Port $DEVEN_SSH_PORT
+  IdentityFile $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  NoHostAuthenticationForLocalhost no
+  LogLevel Error
+
+EOF
+
+  cat ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
 
   touch $DEVEN_SSH_HOME/config
   printf "# This file is machine generated from the concatenation of all configuration files from config.d\n" > $DEVEN_SSH_HOME/config

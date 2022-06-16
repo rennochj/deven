@@ -64,18 +64,18 @@ then
 
 else
 
-  echo "Stoage is marked for destruction. Enter '$DEVEN_WORKSPACE_NAME' to confirm deletion."
-  read confirmation
+  # echo "Stoage is marked for destruction. Enter '$DEVEN_WORKSPACE_NAME' to confirm deletion."
+  # read confirmation
 
-  if [[ $DEVEN_WORKSPACE_NAME == $confirmation ]]
-  then
+  # if [[ $DEVEN_WORKSPACE_NAME == $confirmation ]]
+  # then
 
     terraform -chdir="$DEVEN_DIRECTORY/storage" apply -auto-approve $DEVEN_DESTROY
 
-  else
+  # else
 
-    echo "Storage is retained."
+  #   echo "Storage is retained."
 
-  fi
+  # fi
 
 fi

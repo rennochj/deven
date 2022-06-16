@@ -25,7 +25,22 @@ RUN yum install -y \
 
 ARG TARGETARCH
 
-RUN yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_${TARGETARCH}/amazon-ssm-agent.rpm && systemctl enable amazon-ssm-agent
+RUN <<EOF
+    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_${TARGETARCH}/amazon-ssm-agent.rpm
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+EOF
+
+# Install Dotner --------------------------------
+
+RUN <<EOF
+
+    wget https://dot.net/v1/dotnet-install.sh
+    chmod +x dotnet-install.sh
+    ./dotnet-install.sh -c 6.0.3xx --architecture ${TARGETARCH}
+
+
+EOF
 
 # Install Amazon Extras ------------------------------------------------------------------------------------------------
  
@@ -59,7 +74,11 @@ RUN groupadd --gid 1000 $GROUP \
 RUN usermod -a -G docker $USER
 
 USER deven
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+RUN pip3.8 install --upgrade gimme-aws-creds
+
 USER root
 
 COPY --chown=$USER:$GROUP dotfiles/* /home/$USER

@@ -10,7 +10,7 @@ cat << EOF > $SCRIPT_DIRECTORY/main.tf
 
 module "deven_k8s" {
 
-  source = "$DEVEN_MODULE_LOCATION/deven-k8s"
+  source = "$DEVEN_MODULE_LOCATION/deven-k8s-dind"
 
   #  deven_image = "ghcr.io/rennochj/deven-amazon-base:latest"
   deven_instance_name = "$DEVEN_INSTANCE_NAME"

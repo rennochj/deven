@@ -43,6 +43,8 @@ resource "aws_efs_file_system" "deven_efs" {
 
   creation_token = "deven-efs-token"
 
+  encrypted = true
+
   lifecycle_policy {
     transition_to_ia = "AFTER_30_DAYS"
   }

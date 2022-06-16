@@ -35,6 +35,8 @@ resource "docker_container" "deven" {
 
   image = docker_image.deven_image.name
   name  = var.deven_instance_name
+  privileged = true
+  
   ports {
     internal = 22
     external = var.deven_ssh_port

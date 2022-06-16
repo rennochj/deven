@@ -142,7 +142,6 @@ resource "aws_ecs_task_definition" "deven_task" {
       ]
       command = [
         "/bin/bash", "-c", "deven-initialize && /usr/sbin/sshd -D"
-        # "/bin/bash", "-c", "echo $SSH_PUBLIC_KEY > /home/deven/.ssh/authorized_keys && chown deven -R /home/deven /workspace && /usr/sbin/sshd -D"
       ]
       essential = true
       mountPoints = [
