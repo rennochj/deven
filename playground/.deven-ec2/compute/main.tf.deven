@@ -23,7 +23,7 @@ module "deven_ec2" {
   deven_idle_eval_periods = 2
   deven_idle_period = 1800
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
-  # deven_instance_type = "t2.micro"
+  deven_instance_type = "m5.large"
   # deven_instance_user_data = ""
   deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$DEVEN_WORKSPACE_NAME" --query "Volumes[0].VolumeId" --output=text --region us-west-2)"
   public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"

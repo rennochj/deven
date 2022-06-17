@@ -39,18 +39,26 @@ resource "aws_key_pair" "deven_key" {
 
 }
 
+resource "aws_kms_key" "deven_kms_key" {
+
+  description             = "KMS key for ebse encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+}
+
 resource "aws_security_group" "deven_sg" {
   name        = "deven_sg"
   description = "deven security group"
   vpc_id      = var.aws_vpc
 
-  // To Allow SSH Transport
-  ingress {
-    from_port   = 22
-    protocol    = "tcp"
-    to_port     = 22
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # // To Allow SSH Transport
+  # ingress {
+  #   from_port   = 22
+  #   protocol    = "tcp"
+  #   to_port     = 22
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   egress {
     from_port   = 0
@@ -79,9 +87,13 @@ resource "aws_instance" "deven" {
     Name = var.deven_instance_name
   }
 
+  root_block_device {
+    encrypted = true
+    kms_key_id = aws_kms_key.deven_kms_key.arn
+  }
+
   subnet_id              = var.aws_subnet
   vpc_security_group_ids = [aws_security_group.deven_sg.id]
-
   key_name = aws_key_pair.deven_key.key_name
 
   user_data = <<EOF
@@ -117,7 +129,7 @@ resource "aws_cloudwatch_metric_alarm" "deven_cpu_alarm" {
     InstanceId = aws_instance.deven.id
   }
   alarm_actions = [
-    "arn:aws:automate:${var.aws_region}:ec2:terminate"
+    "arn:aws:automate:${var.aws_region}:ec2:stop"
   ]
 
 }
