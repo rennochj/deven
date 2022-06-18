@@ -25,7 +25,7 @@ variable "aws_region" {
 variable "public_key_file" {
   description = "The public key file location for access to the Deven instance"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  default     = "id_rsa.pub"
 }
 
 variable "deven_ami_names" {

@@ -35,7 +35,7 @@ resource "aws_network_interface" "deven_network_interface" {
 resource "aws_key_pair" "deven_key" {
 
   key_name   = "deven_key"
-  public_key = file(pathexpand(var.public_key_file))
+  public_key = file(var.public_key_file)
 
 }
 

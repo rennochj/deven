@@ -12,7 +12,6 @@ DEVEN_SSH_HOME=~/.ssh
 DEVEN_SSH_PORT=2222
 DEVEN_SSH_USER=deven
 DEVEN_INSTANCE_NAME="deven"
-DEVEN_SSH_PRIVATE_KEY="$DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa"
 
 # -- Process options --------------------------------------------------------------------------------------------------
 
@@ -54,6 +53,10 @@ fi
 
 # -- Build Templates --------------------------------------------------------------------------------------------------
 
+DEVEN_SSH_PRIVATE_KEY="deven-id_rsa"
+DEVEN_SSH_PUBLIC_KEY="deven-id_rsa.pub"
+FULL_DEVEN_DIRECTORY="$(pwd)/$DEVEN_DIRECTORY/compute/"
+
 [[ -f "$DEVEN_DIRECTORY/setup.deven" ]] && source "$DEVEN_DIRECTORY/setup.deven"
 
 for file in "$DEVEN_DIRECTORY/compute/*.deven"; do
@@ -63,9 +66,9 @@ done
 
 # -- Create SSH Keys --------------------------------------------------------------------------------------------------
 
-if [ ! -f "$DEVEN_SSH_PRIVATE_KEY" ]; then
-    echo "Creating a new ssh private key - $DEVEN_SSH_PRIVATE_KEY"
-    ssh-keygen -t rsa -b 4096 -f "$DEVEN_SSH_PRIVATE_KEY" -q -N ""
+if [ ! -f "$FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY" ]; then
+    echo "Creating a new ssh private key - $FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY"
+    ssh-keygen -t rsa -b 4096 -f "$FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY" -q -N ""
 fi
 
 # -- Execute ----------------------------------------------------------------------------------------------------------
@@ -77,12 +80,14 @@ then
   set | grep -E DEVEN_.*=
   echo "DEVEN Environment Variables ---------------------------------------------"
 
-  terraform -chdir="$DEVEN_DIRECTORY/compute" init -upgrade
-  terraform -chdir="$DEVEN_DIRECTORY/compute" apply -auto-approve $DEVEN_DESTROY
+  terraform -chdir="$FULL_DEVEN_DIRECTORY" init -upgrade
+  terraform -chdir="$FULL_DEVEN_DIRECTORY" apply -auto-approve $DEVEN_DESTROY
 
 else
 
-  terraform -chdir="$DEVEN_DIRECTORY/compute" apply -auto-approve $DEVEN_DESTROY
+  terraform -chdir="$FULL_DEVEN_DIRECTORY" apply -auto-approve $DEVEN_DESTROY
+
+  rm $FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY $FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY.pub
 
 fi
 
@@ -91,8 +96,8 @@ fi
 if [[ -z "$DEVEN_DESTROY" ]];
 then
 
-  DEVEN_HOST=$(terraform -chdir="$DEVEN_DIRECTORY/compute" output -raw "host")
-  PROXY_COMMAND=$(terraform -chdir="$DEVEN_DIRECTORY/compute" output -raw "proxy_command")
+  DEVEN_HOST=$(terraform -chdir="$FULL_DEVEN_DIRECTORY" output -raw "host")
+  PROXY_COMMAND=$(terraform -chdir="$FULL_DEVEN_DIRECTORY" output -raw "proxy_command" 2> /dev/null || true)
 
   if [[ -z $PROXY_COMMAND ]]
   then
@@ -114,18 +119,17 @@ then
   fi
 
   touch $DEVEN_SSH_HOME/config.d/$DEVEN_INSTANCE_NAME.config
-  # printf "HOST $DEVEN_INSTANCE_NAME\n    HostName $DEVEN_HOST\n    User $DEVEN_SSH_USER\n    Port $DEVEN_SSH_PORT\n    IdentityFile $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n    NoHostAuthenticationForLocalhost no\n    LogLevel Error\n\n" > ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
   cat <<EOF > ~/.ssh/config.d/$DEVEN_INSTANCE_NAME.config
-HOST $DEVEN_INSTANCE_NAME
-  HostName $DEVEN_HOST
-  ProxyCommand sh -c "$PROXY_COMMAND"
-  User $DEVEN_SSH_USER
-  Port $DEVEN_SSH_PORT
-  IdentityFile $DEVEN_SSH_HOME/$DEVEN_INSTANCE_NAME-id_rsa
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-  NoHostAuthenticationForLocalhost no
-  LogLevel Error
+
+  HOST $DEVEN_INSTANCE_NAME
+    $HOST_OR_PROXY
+    User $DEVEN_SSH_USER
+    Port $DEVEN_SSH_PORT
+    IdentityFile $FULL_DEVEN_DIRECTORY/$DEVEN_SSH_PRIVATE_KEY
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    NoHostAuthenticationForLocalhost no
+    LogLevel Error
 
 EOF
 

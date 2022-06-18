@@ -32,7 +32,7 @@ data "aws_ami" "deven_ami" {
 resource "aws_key_pair" "deven_key" {
 
   key_name   = "deven_key"
-  public_key = file(pathexpand(var.public_key_file))
+  public_key = file(var.public_key_file)
 
 }
 

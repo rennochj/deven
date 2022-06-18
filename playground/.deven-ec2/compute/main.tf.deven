@@ -4,6 +4,10 @@ SCRIPT_DIRECTORY="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/nu
 export DEVEN_SSH_USER=ec2-user
 export DEVEN_SSH_PORT=22
 
+  echo "DEVEN Environment Variables ---------------------------------------------"
+  set | grep -E DEVEN_.*=
+  echo "DEVEN Environment Variables ---------------------------------------------"
+
 cat << EOF > $SCRIPT_DIRECTORY/main.tf
 # This file is generated from $BASH_SOURCE. All changes to this file may be overwritten. 
 
@@ -26,7 +30,7 @@ module "deven_ec2" {
   deven_instance_type = "m5.large"
   # deven_instance_user_data = ""
   deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$DEVEN_WORKSPACE_NAME" --query "Volumes[0].VolumeId" --output=text --region us-west-2)"
-  public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
+  public_key_file = "$DEVEN_SSH_PUBLIC_KEY"
   # initial_script = "initial-script"
 
 }

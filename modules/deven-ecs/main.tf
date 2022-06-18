@@ -1,6 +1,6 @@
 locals {
-  public_key  = file(pathexpand("${var.private_key_file}.pub"))
-  private_key = file(pathexpand("${var.private_key_file}"))
+  public_key  = file("${var.private_key_file}.pub")
+  private_key = file("${var.private_key_file}")
 }
 
 provider "aws" {

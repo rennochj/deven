@@ -1,6 +1,6 @@
 locals {
-  public_key  = file(pathexpand("${var.private_key_file}.pub"))
-  private_key = file(pathexpand(var.private_key_file))
+  public_key  = file("${var.private_key_file}.pub")
+  private_key = file(var.private_key_file)
   docker_host = var.docker_host == "localhost" ? "unix:///var/run/docker.sock" : "ssh://${var.docker_username}@${var.docker_host}"
 }
 

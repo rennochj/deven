@@ -4,3 +4,5 @@
 **/*.tfstate.backup
 **/*.lock.hcl
 **/*.deven-info
+**/*id_rsa
+**/*id_rsa.pub
