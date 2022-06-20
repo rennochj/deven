@@ -65,30 +65,18 @@ locals {
   initial_script = fileexists(var.initial_script) ? file(var.initial_script) : ""
 }
 
-resource "aws_kms_key" "deven_kms_key" {
-
-  description             = "KMS key for ebse encryption"
-  deletion_window_in_days = 10
-  enable_key_rotation     = true
-
-}
-
 resource "aws_spot_instance_request" "deven_spot" {
 
   ami           = data.aws_ami.deven_ami.id
   instance_type = var.deven_instance_type
   # spot_price           = "0.1"
   instance_interruption_behavior = "stop"
-  spot_type                      = "one-time"
+  spot_type                      = "persistent"
+  
   wait_for_fulfillment           = true
   key_name                       = aws_key_pair.deven_key.key_name
   associate_public_ip_address    = true
   iam_instance_profile           = "AmazonSSMRoleForInstancesQuickSetup"
-
-  root_block_device {
-    encrypted = true
-    kms_key_id = aws_kms_key.deven_kms_key.arn
-  }
 
   tags = {
     Name = var.deven_instance_name

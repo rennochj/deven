@@ -92,6 +92,7 @@ resource "aws_instance" "deven" {
     kms_key_id = aws_kms_key.deven_kms_key.arn
   }
 
+  availability_zone      = "us-west-2a"
   subnet_id              = var.aws_subnet
   vpc_security_group_ids = [aws_security_group.deven_sg.id]
   key_name = aws_key_pair.deven_key.key_name

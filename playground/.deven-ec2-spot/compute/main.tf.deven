@@ -31,7 +31,15 @@ module "deven_ec2_spot" {
 }
 
 output "host" {
-  value = module.deven_ec2_spot.deven_instance
+  value = module.deven_ec2_spot.deven_private_ip
+}
+
+output "id" {
+  value = module.deven_ec2_spot.deven_instance_id
+}
+
+output "proxy_command" {
+  value = "aws ssm start-session --target \${module.deven_ec2_spot.deven_instance_id} --region $AWS_DEFAULT_REGION --document-name AWS-StartSSHSession --parameters portNumber=$DEVEN_SSH_PORT"
 }
 
 output "ssh_port" {
