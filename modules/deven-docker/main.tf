@@ -57,11 +57,11 @@ resource "docker_container" "deven" {
     read_only      = false
   }
 
-  provisioner "local-exec" {
-    command = <<-EOT
-    DOCKER_HOST=${local.docker_host} docker exec ${var.deven_instance_name} bash -c "deven-initialize"
-    EOT
-  }
+  command = [
+    "/bin/bash",
+    "-c",
+    "deven-initialize && /usr/sbin/sshd -D"
+  ]
 
 }
 
