@@ -14,7 +14,7 @@ module "deven_ec2_spot" {
   # aws_config = "~/.aws/config"
   # aws_credentials = "~/.aws/credentials"
   # aws_profile = "default"
-  # aws_region = "us-west-2"
+  aws_region = "$DEVEN_AWS_REGION"
   aws_subnet = "subnet-0061fca622534b107"
   aws_vpc = "vpc-0c45ed9142d6190db"
   # deven_ami_names = ["Amazon Linux 2"]
@@ -24,7 +24,7 @@ module "deven_ec2_spot" {
   # deven_idle_period = 600
   deven_instance_name = "$DEVEN_INSTANCE_NAME"
   deven_instance_type = "t3.large"
-  deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$DEVEN_WORKSPACE_NAME" --query "Volumes[0].VolumeId" --output=text --region us-west-2)"
+  deven_workspace_volume_id = "$(aws ec2 describe-volumes --filters "Name=tag:Name,Values=$DEVEN_WORKSPACE_NAME" --query "Volumes[0].VolumeId" --output=text --region $DEVEN_AWS_REGION)"
   public_key_file = "$DEVEN_SSH_PRIVATE_KEY.pub"
   # initial_script = "initial-script"
 
@@ -39,7 +39,7 @@ output "id" {
 }
 
 output "proxy_command" {
-  value = "aws ssm start-session --target \${module.deven_ec2_spot.deven_instance_id} --region $AWS_DEFAULT_REGION --document-name AWS-StartSSHSession --parameters portNumber=$DEVEN_SSH_PORT"
+  value = "aws ssm start-session --target \${module.deven_ec2_spot.deven_instance_id} --region $DEVEN_AWS_REGION --document-name AWS-StartSSHSession --parameters portNumber=$DEVEN_SSH_PORT"
 }
 
 output "ssh_port" {

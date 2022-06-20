@@ -2,4 +2,4 @@
 
 export DEVEN_INSTANCE_NAME="deven-ec2-spot"
 export DEVEN_WORKSPACE_NAME="$(whoami)-$DEVEN_INSTANCE_NAME-workspace"
-
+export DEVEN_AWS_REGION=us-west-2
